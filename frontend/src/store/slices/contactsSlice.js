@@ -47,7 +47,7 @@ export const fetchContacts = createAsyncThunk(
         sortBy,
         sortOrder
       );
-      return response.data;
+      return response;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch contacts"
