@@ -1,16 +1,26 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { login, register, refreshToken } from "../../services/auth";
+import { register, refreshToken } from "../../services/auth";
+import axios from "axios";
+
+const API_BASE_URL = "https://contacts-app-backend.onrender.com";
 
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await login(credentials);
+      const response = await axios.post(
+        `${API_BASE_URL}/auth/login`,
+        credentials,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
       return response.data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to login"
-      );
+      return rejectWithValue(error.response?.data?.message || "Login failed");
     }
   }
 );

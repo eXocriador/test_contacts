@@ -19,11 +19,16 @@ export const serverSetup = () => {
   // Enable CORS for all routes
   app.use(
     cors({
-      origin: 'https://test-contacts-indol.vercel.app',
+      origin: [
+        'https://test-contacts-indol.vercel.app',
+        'http://localhost:3001',
+      ],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
       credentials: true,
       exposedHeaders: ['Set-Cookie'],
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
     }),
   );
 
