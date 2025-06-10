@@ -1,8 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { register, refreshToken } from "../../services/auth";
 import axios from "axios";
 
 const API_BASE_URL = "https://contacts-app-backend.onrender.com";
+
+// Configure axios defaults
+axios.defaults.withCredentials = true;
 
 export const loginUser = createAsyncThunk(
   "auth/login",
@@ -12,7 +14,6 @@ export const loginUser = createAsyncThunk(
         `${API_BASE_URL}/auth/login`,
         credentials,
         {
-          withCredentials: true,
           headers: {
             "Content-Type": "application/json"
           }
@@ -29,11 +30,19 @@ export const registerUser = createAsyncThunk(
   "auth/register",
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await register(userData);
+      const response = await axios.post(
+        `${API_BASE_URL}/auth/register`,
+        userData,
+        {
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to register"
+        error.response?.data?.message || "Registration failed"
       );
     }
   }
@@ -43,7 +52,7 @@ export const refreshUserToken = createAsyncThunk(
   "auth/refresh",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await refreshToken();
+      const response = await axios.post(`${API_BASE_URL}/auth/refresh`);
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -112,7 +121,6 @@ const authSlice = createSlice({
       })
       .addCase(refreshUserToken.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.data.user;
         state.accessToken = action.payload.data.accessToken;
         localStorage.setItem("accessToken", action.payload.data.accessToken);
       })

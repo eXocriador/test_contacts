@@ -16,29 +16,26 @@ const PORT = Number(getEnvVar('PORT', '3000'));
 export const serverSetup = () => {
   const app = express();
 
-  // Enable CORS for all routes
-  app.use(
-    cors({
-      origin: 'https://test-contacts-indol.vercel.app',
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-      credentials: true,
-      exposedHeaders: ['Set-Cookie'],
-      preflightContinue: false,
-      optionsSuccessStatus: 204,
-      maxAge: 86400, // 24 hours
-    }),
-  );
-
-  // Handle preflight requests
-  app.options('*', cors());
-
+  // Basic middleware
   app.use(express.json());
   app.use(cookieParser());
-  // app.use(logger);
 
+  // CORS configuration
+  const corsOptions = {
+    origin: 'https://test-contacts-indol.vercel.app',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Set-Cookie'],
+  };
+
+  // Apply CORS
+  app.use(cors(corsOptions));
+
+  // Routes
   app.use('/', router);
 
+  // Error handlers
   app.use(notFoundHandler);
   app.use(errorHandler);
 
