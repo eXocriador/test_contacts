@@ -173,10 +173,10 @@ const contactsSlice = createSlice({
       .addCase(fetchContacts.fulfilled, (state, action) => {
         state.loading = false;
         if (action.payload && action.payload.data) {
-          state.items = action.payload.data;
-          state.totalPages = action.payload.totalPages || 1;
-          state.currentPage = action.payload.currentPage || 1;
-          state.perPage = action.payload.perPage || 10;
+          state.items = action.payload.data.data || [];
+          state.totalPages = action.payload.data.totalPages || 1;
+          state.currentPage = action.payload.data.currentPage || 1;
+          state.perPage = action.payload.data.perPage || 10;
         } else {
           state.items = [];
           state.error = "Invalid response format";
