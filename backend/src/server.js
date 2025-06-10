@@ -17,10 +17,21 @@ export const serverSetup = () => {
 
   // Enable CORS for all routes
   app.use((req, res, next) => {
+    const allowedOrigins = [
+      'http://localhost:3001',
+      'https://test-contacts-indol.vercel.app',
+      'https://contacts-app-frontend.vercel.app',
+    ];
+
     const origin = req.headers.origin;
     console.log('Server CORS - Request origin:', origin);
 
-    res.header('Access-Control-Allow-Origin', origin || '*');
+    if (allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    } else {
+      res.header('Access-Control-Allow-Origin', '*');
+    }
+
     res.header(
       'Access-Control-Allow-Methods',
       'GET, POST, PUT, DELETE, PATCH, OPTIONS',
