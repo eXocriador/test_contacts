@@ -175,7 +175,7 @@ const contactsSlice = createSlice({
         if (action.payload && action.payload.data) {
           state.items = action.payload.data.data || [];
           state.totalPages = action.payload.data.totalPages || 1;
-          state.currentPage = action.payload.data.currentPage || 1;
+          state.currentPage = action.payload.data.page || 1;
           state.perPage = action.payload.data.perPage || 10;
         } else {
           state.items = [];
