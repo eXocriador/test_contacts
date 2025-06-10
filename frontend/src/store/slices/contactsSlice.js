@@ -45,45 +45,33 @@ export const fetchContacts = createAsyncThunk(
     {
       page = 1,
       perPage = 10,
-      search = "",
       sortBy = "name",
       sortOrder = "asc",
-      isFavourite,
-      contactType
-    },
+      search = ""
+    } = {},
     { rejectWithValue }
   ) => {
     try {
+      console.log("Fetching contacts with search:", search);
       const params = new URLSearchParams({
-        page: page.toString(),
-        perPage: perPage.toString(),
+        page,
+        perPage,
         sortBy,
-        sortOrder
+        sortOrder,
+        ...(search && { search })
       });
 
-      if (search) {
-        params.append("search", search);
-      }
+      const url = `/api/contacts?${params.toString()}`;
+      console.log("Sending request to:", url);
 
-      if (isFavourite !== undefined) {
-        params.append("isFavourite", isFavourite.toString());
-      }
+      const response = await axios.get(url, {
+        withCredentials: true
+      });
 
-      if (contactType) {
-        params.append("contactType", contactType);
-      }
-
-      console.log(
-        "Sending request to:",
-        `${API_BASE_URL}/api/contacts?${params.toString()}`
-      ); // Debug log
-      const response = await axios.get(
-        `${API_BASE_URL}/api/contacts?${params.toString()}`
-      );
-      console.log("Received response:", response.data); // Debug log
-      return response;
+      console.log("Response received:", response.data);
+      return response.data;
     } catch (error) {
-      console.error("Error fetching contacts:", error); // Debug log
+      console.error("Error fetching contacts:", error);
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch contacts"
       );

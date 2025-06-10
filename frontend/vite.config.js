@@ -8,9 +8,10 @@ export default defineConfig({
     port: 3001,
     proxy: {
       "/api": {
-        target: "http://localhost:3000",
+        target: "https://contacts-app-backend.onrender.com",
         changeOrigin: true,
-        secure: false
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, "")
       }
     }
   }
