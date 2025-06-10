@@ -19,10 +19,15 @@ export const serverSetup = () => {
 
   app.use(
     cors({
-      origin: [CORS_ORIGIN, 'http://localhost:5173'],
+      origin: [
+        CORS_ORIGIN,
+        'http://localhost:5173',
+        'https://test-contacts-indol.vercel.app',
+      ],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+      exposedHeaders: ['Set-Cookie'],
     }),
   );
 
