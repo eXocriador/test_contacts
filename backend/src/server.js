@@ -16,14 +16,14 @@ const PORT = Number(getEnvVar('PORT', '3000'));
 export const serverSetup = () => {
   const app = express();
 
+  // Enable CORS for all routes
   app.use(
     cors({
-      origin: [
-        'http://localhost:3001',
-        'https://test-contacts-indol.vercel.app',
-        'https://contacts-app-frontend.vercel.app',
-      ],
+      origin: 'https://test-contacts-indol.vercel.app',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
       credentials: true,
+      exposedHeaders: ['Set-Cookie'],
     }),
   );
 

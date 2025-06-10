@@ -77,9 +77,17 @@ export const fetchContacts = createAsyncThunk(
         "Sending request to:",
         `${API_BASE_URL}/api/contacts?${params.toString()}`
       );
+
       const response = await axios.get(
-        `${API_BASE_URL}/api/contacts?${params.toString()}`
+        `${API_BASE_URL}/api/contacts?${params.toString()}`,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
       );
+
       console.log("Received response:", response.data);
       return response;
     } catch (error) {
