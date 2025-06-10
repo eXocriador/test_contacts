@@ -1,6 +1,6 @@
 // src/services/auth.js
 
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import createHttpError from 'http-errors';
 import { randomBytes } from 'crypto';
 
