@@ -400,8 +400,22 @@ export const ContactsPage = () => {
               Array.from({ length: emptyRows }).map((_, idx) => (
                 <TableRow key={`empty-${idx}`}>
                   <TableCell
-                    colSpan={6}
-                    sx={{ height: 48, background: "#fafafa" }}
+                    sx={{ height: 48, borderBottom: "1px solid #e0e0e0" }}
+                  />
+                  <TableCell
+                    sx={{ height: 48, borderBottom: "1px solid #e0e0e0" }}
+                  />
+                  <TableCell
+                    sx={{ height: 48, borderBottom: "1px solid #e0e0e0" }}
+                  />
+                  <TableCell
+                    sx={{ height: 48, borderBottom: "1px solid #e0e0e0" }}
+                  />
+                  <TableCell
+                    sx={{ height: 48, borderBottom: "1px solid #e0e0e0" }}
+                  />
+                  <TableCell
+                    sx={{ height: 48, borderBottom: "1px solid #e0e0e0" }}
                   />
                 </TableRow>
               ))}
