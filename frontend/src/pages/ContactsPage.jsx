@@ -29,7 +29,8 @@ import {
   CardActions,
   Tooltip,
   Menu,
-  Divider
+  Divider,
+  CircularProgress
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -191,8 +192,7 @@ export const ContactsPage = () => {
           search: searchQuery,
           sortBy,
           sortOrder,
-          isFavourite: showFavoritesOnly ? true : undefined,
-          contactType: contactTypeFilter || undefined
+          isFavourite: showFavoritesOnly ? true : undefined
         })
       );
     }, 300);
@@ -205,7 +205,6 @@ export const ContactsPage = () => {
     sortBy,
     sortOrder,
     showFavoritesOnly,
-    contactTypeFilter,
     dispatch
   ]);
 
@@ -236,8 +235,7 @@ export const ContactsPage = () => {
           search: searchQuery,
           sortBy,
           sortOrder,
-          isFavourite: showFavoritesOnly ? true : undefined,
-          contactType: contactTypeFilter || undefined
+          isFavourite: showFavoritesOnly ? true : undefined
         })
       );
     } catch (error) {
@@ -266,8 +264,7 @@ export const ContactsPage = () => {
               search: searchQuery,
               sortBy,
               sortOrder,
-              isFavourite: showFavoritesOnly ? true : undefined,
-              contactType: contactTypeFilter || undefined
+              isFavourite: showFavoritesOnly ? true : undefined
             })
           );
         }
@@ -292,8 +289,7 @@ export const ContactsPage = () => {
           search: searchQuery,
           sortBy,
           sortOrder,
-          isFavourite: showFavoritesOnly ? true : undefined,
-          contactType: contactTypeFilter || undefined
+          isFavourite: showFavoritesOnly ? true : undefined
         })
       );
     } catch (error) {
@@ -462,35 +458,39 @@ export const ContactsPage = () => {
         ))}
       </Menu>
 
+      {loading && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      )}
+
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mt: 2 }}>
           {error}
         </Alert>
       )}
 
-      {/* Responsive Grid of Contact Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        {contacts.map((contact) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={contact._id}>
-            <ContactCard
-              contact={contact}
-              onEdit={handleOpenForm}
-              onDelete={handleDeleteContact}
-              onToggleFavorite={handleToggleFavorite}
-            />
-          </Grid>
-        ))}
-      </Grid>
-
-      {contacts.length === 0 && !loading && (
-        <Box sx={{ textAlign: "center", py: 4 }}>
+      {!loading && !error && contacts.length === 0 && (
+        <Box sx={{ textAlign: "center", mt: 4 }}>
           <Typography variant="h6" color="text.secondary">
             No contacts found
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Try adjusting your search or add a new contact
-          </Typography>
         </Box>
+      )}
+
+      {!loading && !error && contacts.length > 0 && (
+        <Grid container spacing={3}>
+          {contacts.map((contact) => (
+            <Grid item xs={12} sm={6} md={4} key={contact.id}>
+              <ContactCard
+                contact={contact}
+                onEdit={() => handleOpenForm(contact)}
+                onDelete={() => handleDeleteContact(contact._id)}
+                onToggleFavorite={() => handleToggleFavorite(contact)}
+              />
+            </Grid>
+          ))}
+        </Grid>
       )}
 
       <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>

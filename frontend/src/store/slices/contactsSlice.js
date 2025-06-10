@@ -71,9 +71,12 @@ export const fetchContacts = createAsyncThunk(
         params.append("contactType", contactType);
       }
 
+      console.log("Sending request to:", `/api/contacts?${params.toString()}`); // Debug log
       const response = await axios.get(`/api/contacts?${params.toString()}`);
+      console.log("Received response:", response.data); // Debug log
       return response;
     } catch (error) {
+      console.error("Error fetching contacts:", error); // Debug log
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch contacts"
       );
@@ -211,12 +214,15 @@ const contactsSlice = createSlice({
       })
       .addCase(fetchContacts.fulfilled, (state, action) => {
         state.loading = false;
+        console.log("Processing response:", action.payload); // Debug log
         if (action.payload && action.payload.data) {
           state.items = action.payload.data.data || [];
           state.totalPages = action.payload.data.totalPages || 1;
           state.currentPage = action.payload.data.page || 1;
           state.perPage = action.payload.data.perPage || 10;
+          console.log("Updated state:", state); // Debug log
         } else {
+          console.error("Invalid response format:", action.payload); // Debug log
           state.items = [];
           state.error = "Invalid response format";
         }
@@ -225,6 +231,7 @@ const contactsSlice = createSlice({
         state.loading = false;
         state.error = action.payload || action.error.message;
         state.items = [];
+        console.error("Request rejected:", action.payload); // Debug log
       })
       // Add Contact
       .addCase(addContact.pending, (state) => {
