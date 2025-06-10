@@ -12,13 +12,14 @@ import { cLogs } from './utils/cLogs.js';
 
 dotenv.config();
 const PORT = Number(getEnvVar('PORT', '3000'));
+const CORS_ORIGIN = getEnvVar('CORS_ORIGIN', 'http://localhost:5173');
 
 export const serverSetup = () => {
   const app = express();
 
   app.use(
     cors({
-      origin: ['http://localhost:3000', 'http://localhost:3001'],
+      origin: [CORS_ORIGIN, 'http://localhost:5173'],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
