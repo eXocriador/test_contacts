@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useSnackbar } from "notistack";
 import {
@@ -15,7 +15,8 @@ import {
   MenuItem,
   Alert,
   FormControlLabel,
-  Switch
+  Switch,
+  FormHelperText
 } from "@mui/material";
 import { addContact, editContact } from "../store/slices/contactsSlice";
 
@@ -198,9 +199,7 @@ export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
                 ))}
               </Select>
               {errors.contactType && (
-                <Box sx={{ color: "error.main", fontSize: "0.75rem", mt: 1 }}>
-                  {errors.contactType}
-                </Box>
+                <FormHelperText>{errors.contactType}</FormHelperText>
               )}
             </FormControl>
             <FormControlLabel

@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Typography,
   Button,
+  Box,
   TextField,
+  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -12,18 +13,25 @@ import {
   TableHead,
   TableRow,
   Paper,
-  IconButton,
-  TablePagination,
-  Box,
-  CircularProgress,
-  Alert
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Grid,
+  Alert,
+  Snackbar
 } from "@mui/material";
 import {
   Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  Search as SearchIcon
 } from "@mui/icons-material";
-import { ContactForm } from "../components/ContactForm";
+import { useDispatch, useSelector } from "react-redux";
 import {
   fetchContacts,
   addContact,
@@ -35,8 +43,10 @@ import {
   setPerPage,
   clearError
 } from "../store/slices/contactsSlice";
+import ContactForm from "../components/ContactForm";
+import Pagination from "../components/Pagination";
 
-export const ContactsPage = () => {
+const ContactsPage = () => {
   const dispatch = useDispatch();
   const {
     items: contacts,
@@ -50,8 +60,10 @@ export const ContactsPage = () => {
     sortOrder
   } = useSelector((state) => state.contacts);
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [openForm, setOpenForm] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showError, setShowError] = useState(false);
 
   useEffect(() => {
     loadContacts();
@@ -69,45 +81,29 @@ export const ContactsPage = () => {
     );
   };
 
-  const handleSearch = (event) => {
-    dispatch(setSearch(event.target.value));
+  const handleOpenForm = (contact = null) => {
+    setEditingContact(contact);
+    setOpenForm(true);
   };
 
-  const handleSort = (field) => {
-    dispatch(
-      setSort({
-        field,
-        order: sortBy === field && sortOrder === "asc" ? "desc" : "asc"
-      })
-    );
+  const handleCloseForm = () => {
+    setOpenForm(false);
+    setEditingContact(null);
   };
 
-  const handlePageChange = (event, newPage) => {
-    dispatch(setPage(newPage + 1));
-  };
-
-  const handleRowsPerPageChange = (event) => {
-    dispatch(setPerPage(parseInt(event.target.value, 10)));
-  };
-
-  const handleAddContact = async (contact) => {
+  const handleSubmit = async (contactData) => {
     try {
-      await dispatch(addContact(contact)).unwrap();
-      setIsFormOpen(false);
+      if (editingContact) {
+        await dispatch(
+          editContact({ id: editingContact._id, contact: contactData })
+        ).unwrap();
+      } else {
+        await dispatch(addContact(contactData)).unwrap();
+      }
+      handleCloseForm();
       loadContacts();
     } catch (error) {
-      console.error("Failed to add contact:", error);
-    }
-  };
-
-  const handleEditContact = async (contact) => {
-    try {
-      await dispatch(editContact({ id: editingContact._id, contact })).unwrap();
-      setEditingContact(null);
-      setIsFormOpen(false);
-      loadContacts();
-    } catch (error) {
-      console.error("Failed to edit contact:", error);
+      setShowError(true);
     }
   };
 
@@ -121,69 +117,90 @@ export const ContactsPage = () => {
           loadContacts();
         }
       } catch (error) {
-        console.error("Failed to delete contact:", error);
+        setShowError(true);
       }
     }
   };
 
-  const handleEdit = (contact) => {
-    setEditingContact(contact);
-    setIsFormOpen(true);
+  const handleSearch = (e) => {
+    e.preventDefault();
+    dispatch(setSearch(searchQuery));
+  };
+
+  const handleSort = (field) => {
+    const newOrder = field === sortBy && sortOrder === "asc" ? "desc" : "asc";
+    dispatch(setSort({ field, order: newOrder }));
+  };
+
+  const handlePageChange = (newPage) => {
+    dispatch(setPage(newPage));
+  };
+
+  const handlePerPageChange = (event) => {
+    dispatch(setPerPage(Number(event.target.value)));
   };
 
   const handleCloseError = () => {
+    setShowError(false);
     dispatch(clearError());
   };
 
-  if (loading && !contacts?.length) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="60vh"
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  const safeContacts = Array.isArray(contacts) ? contacts : [];
-
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={4}
-      >
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <Typography variant="h4" component="h1">
           Contacts
         </Typography>
         <Button
           variant="contained"
+          color="primary"
           startIcon={<AddIcon />}
-          onClick={() => setIsFormOpen(true)}
+          onClick={() => handleOpenForm()}
         >
           Add Contact
         </Button>
       </Box>
 
+      <Box component="form" onSubmit={handleSearch} sx={{ mb: 3 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Search contacts"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <IconButton type="submit">
+                    <SearchIcon />
+                  </IconButton>
+                )
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Contacts per page</InputLabel>
+              <Select
+                value={perPage}
+                onChange={handlePerPageChange}
+                label="Contacts per page"
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={20}>20</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
+      </Box>
+
       {error && (
-        <Alert severity="error" onClose={handleCloseError} sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
-
-      <TextField
-        fullWidth
-        variant="outlined"
-        placeholder="Search contacts..."
-        value={search}
-        onChange={handleSearch}
-        sx={{ mb: 4 }}
-      />
 
       <TableContainer component={Paper}>
         <Table>
@@ -215,29 +232,27 @@ export const ContactsPage = () => {
                 Type{" "}
                 {sortBy === "contactType" && (sortOrder === "asc" ? "↑" : "↓")}
               </TableCell>
-              <TableCell
-                onClick={() => handleSort("isFavourite")}
-                sx={{ cursor: "pointer" }}
-              >
-                Favorite{" "}
-                {sortBy === "isFavourite" && (sortOrder === "asc" ? "↑" : "↓")}
-              </TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {safeContacts.map((contact) => (
+            {contacts.map((contact) => (
               <TableRow key={contact._id}>
                 <TableCell>{contact.name}</TableCell>
                 <TableCell>{contact.phoneNumber}</TableCell>
                 <TableCell>{contact.email}</TableCell>
                 <TableCell>{contact.contactType}</TableCell>
-                <TableCell>{contact.isFavourite ? "★" : "☆"}</TableCell>
                 <TableCell>
-                  <IconButton onClick={() => handleEdit(contact)}>
+                  <IconButton
+                    color="primary"
+                    onClick={() => handleOpenForm(contact)}
+                  >
                     <EditIcon />
                   </IconButton>
-                  <IconButton onClick={() => handleDeleteContact(contact._id)}>
+                  <IconButton
+                    color="error"
+                    onClick={() => handleDeleteContact(contact._id)}
+                  >
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>
@@ -246,25 +261,39 @@ export const ContactsPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      <TablePagination
-        component="div"
-        count={totalPages * perPage}
-        page={currentPage - 1}
-        onPageChange={handlePageChange}
-        rowsPerPage={perPage}
-        onRowsPerPageChange={handleRowsPerPageChange}
-        rowsPerPageOptions={[5, 10, 25, 50]}
-      />
 
-      <ContactForm
-        open={isFormOpen}
-        onClose={() => {
-          setIsFormOpen(false);
-          setEditingContact(null);
-        }}
-        contact={editingContact}
-        onSubmit={editingContact ? handleEditContact : handleAddContact}
-      />
+      <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      </Box>
+
+      <Dialog open={openForm} onClose={handleCloseForm} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {editingContact ? "Edit Contact" : "Add New Contact"}
+        </DialogTitle>
+        <DialogContent>
+          <ContactForm
+            initialData={editingContact}
+            onSubmit={handleSubmit}
+            onCancel={handleCloseForm}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Snackbar
+        open={showError}
+        autoHideDuration={6000}
+        onClose={handleCloseError}
+      >
+        <Alert onClose={handleCloseError} severity="error">
+          {error || "An error occurred"}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
+
+export default ContactsPage;
