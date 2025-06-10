@@ -172,10 +172,15 @@ const contactsSlice = createSlice({
       })
       .addCase(fetchContacts.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload.data || [];
-        state.totalPages = action.payload.totalPages || 1;
-        state.currentPage = action.payload.currentPage || 1;
-        state.perPage = action.payload.perPage || 10;
+        if (action.payload && action.payload.data) {
+          state.items = action.payload.data;
+          state.totalPages = action.payload.totalPages || 1;
+          state.currentPage = action.payload.currentPage || 1;
+          state.perPage = action.payload.perPage || 10;
+        } else {
+          state.items = [];
+          state.error = "Invalid response format";
+        }
       })
       .addCase(fetchContacts.rejected, (state, action) => {
         state.loading = false;
@@ -189,7 +194,11 @@ const contactsSlice = createSlice({
       })
       .addCase(addContact.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = [...state.items, action.payload];
+        if (action.payload) {
+          state.items = [...state.items, action.payload];
+        } else {
+          state.error = "Invalid response format";
+        }
       })
       .addCase(addContact.rejected, (state, action) => {
         state.loading = false;
@@ -202,11 +211,15 @@ const contactsSlice = createSlice({
       })
       .addCase(editContact.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.items.findIndex(
-          (item) => item._id === action.payload._id
-        );
-        if (index !== -1) {
-          state.items[index] = action.payload;
+        if (action.payload) {
+          const index = state.items.findIndex(
+            (item) => item._id === action.payload._id
+          );
+          if (index !== -1) {
+            state.items[index] = action.payload;
+          }
+        } else {
+          state.error = "Invalid response format";
         }
       })
       .addCase(editContact.rejected, (state, action) => {
@@ -220,9 +233,13 @@ const contactsSlice = createSlice({
       })
       .addCase(removeContact.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = state.items.filter(
-          (item) => item._id !== action.payload._id
-        );
+        if (action.payload && action.payload._id) {
+          state.items = state.items.filter(
+            (item) => item._id !== action.payload._id
+          );
+        } else {
+          state.error = "Invalid response format";
+        }
       })
       .addCase(removeContact.rejected, (state, action) => {
         state.loading = false;

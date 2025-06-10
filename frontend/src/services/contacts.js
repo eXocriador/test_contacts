@@ -18,21 +18,26 @@ export const getContacts = async (
     params.append("search", search);
   }
 
-  return api.get(`/contacts?${params.toString()}`);
+  const response = await api.get(`/contacts?${params.toString()}`);
+  return response.data;
 };
 
 export const getContactById = async (id) => {
-  return api.get(`/contacts/${id}`);
+  const response = await api.get(`/contacts/${id}`);
+  return response.data;
 };
 
 export const createContact = async (contact) => {
-  return api.post("/contacts", contact);
+  const response = await api.post("/contacts", contact);
+  return response.data;
 };
 
 export const updateContact = async (id, contact) => {
-  return api.put(`/contacts/${id}`, contact);
+  const response = await api.put(`/contacts/${id}`, contact);
+  return response.data;
 };
 
 export const deleteContact = async (id) => {
-  return api.delete(`/contacts/${id}`);
+  await api.delete(`/contacts/${id}`);
+  return { _id: id };
 };
