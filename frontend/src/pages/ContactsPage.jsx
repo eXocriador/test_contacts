@@ -161,7 +161,7 @@ export const ContactsPage = () => {
 
   const [openForm, setOpenForm] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(search);
+  const [searchQuery, setSearchQuery] = useState("");
   const [showError, setShowError] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [contactToDelete, setContactToDelete] = useState(null);
@@ -182,34 +182,31 @@ export const ContactsPage = () => {
   }, [currentPage, totalPages, dispatch]);
 
   useEffect(() => {
-    loadContacts();
-  }, [
-    currentPage,
-    perPage,
-    search,
-    sortBy,
-    sortOrder,
-    showFavoritesOnly,
-    contactTypeFilter
-  ]);
-
-  useEffect(() => {
-    setSearchQuery(search);
-  }, [search]);
-
-  const loadContacts = () => {
     dispatch(
       fetchContacts({
         page: currentPage,
         perPage,
-        search,
+        search: searchQuery,
         sortBy,
         sortOrder,
         isFavourite: showFavoritesOnly ? true : undefined,
         contactType: contactTypeFilter || undefined
       })
     );
-  };
+  }, [
+    currentPage,
+    perPage,
+    searchQuery,
+    sortBy,
+    sortOrder,
+    showFavoritesOnly,
+    contactTypeFilter,
+    dispatch
+  ]);
+
+  useEffect(() => {
+    setSearchQuery(search);
+  }, [search]);
 
   const handleOpenForm = (contact = null) => {
     setEditingContact(contact);
@@ -231,7 +228,17 @@ export const ContactsPage = () => {
         await dispatch(addContact(contactData)).unwrap();
       }
       handleCloseForm();
-      loadContacts();
+      dispatch(
+        fetchContacts({
+          page: currentPage,
+          perPage,
+          search: searchQuery,
+          sortBy,
+          sortOrder,
+          isFavourite: showFavoritesOnly ? true : undefined,
+          contactType: contactTypeFilter || undefined
+        })
+      );
     } catch (error) {
       setShowError(true);
     }
@@ -251,7 +258,17 @@ export const ContactsPage = () => {
         if (contacts.length === 1 && currentPage > 1) {
           dispatch(setPage(currentPage - 1));
         } else {
-          loadContacts();
+          dispatch(
+            fetchContacts({
+              page: currentPage,
+              perPage,
+              search: searchQuery,
+              sortBy,
+              sortOrder,
+              isFavourite: showFavoritesOnly ? true : undefined,
+              contactType: contactTypeFilter || undefined
+            })
+          );
         }
       } catch (error) {
         setShowError(true);
@@ -267,7 +284,17 @@ export const ContactsPage = () => {
           contact: { isFavourite: !contact.isFavourite }
         })
       ).unwrap();
-      loadContacts();
+      dispatch(
+        fetchContacts({
+          page: currentPage,
+          perPage,
+          search: searchQuery,
+          sortBy,
+          sortOrder,
+          isFavourite: showFavoritesOnly ? true : undefined,
+          contactType: contactTypeFilter || undefined
+        })
+      );
     } catch (error) {
       setShowError(true);
     }
@@ -286,6 +313,10 @@ export const ContactsPage = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     dispatch(setSearch(searchQuery));
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
   };
 
   const handleClearSearch = () => {
@@ -358,7 +389,7 @@ export const ContactsPage = () => {
         <TextField
           label="Search contacts"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={handleSearchChange}
           size="small"
           sx={{ flex: 2, minWidth: 180, width: { xs: "100%", sm: "auto" } }}
           InputProps={{

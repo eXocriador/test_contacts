@@ -108,17 +108,8 @@ const contactsSlice = createSlice({
   initialState: getInitialState(),
   reducers: {
     setSearch: (state, action) => {
-      state.search = action.payload.trim();
+      state.search = action.payload;
       state.currentPage = 1;
-      localStorage.setItem(
-        "contactsState",
-        JSON.stringify({
-          currentPage: state.currentPage,
-          perPage: state.perPage,
-          sortBy: state.sortBy,
-          sortOrder: state.sortOrder
-        })
-      );
     },
     clearSearch: (state) => {
       state.search = "";
