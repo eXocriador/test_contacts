@@ -415,16 +415,12 @@ export const ContactsPage = () => {
 
       {/* Edit/Add Contact Dialog */}
       <Dialog open={openForm} onClose={handleCloseForm} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {editingContact ? "Edit Contact" : "Add New Contact"}
-        </DialogTitle>
-        <DialogContent>
-          <ContactForm
-            initialData={editingContact}
-            onSubmit={handleSubmit}
-            onCancel={handleCloseForm}
-          />
-        </DialogContent>
+        <ContactForm
+          open={openForm}
+          onClose={handleCloseForm}
+          initialData={editingContact}
+          onSubmit={handleSubmit}
+        />
       </Dialog>
 
       {/* Custom Delete Dialog */}

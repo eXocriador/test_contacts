@@ -16,7 +16,8 @@ import {
   Alert,
   FormControlLabel,
   Switch,
-  FormHelperText
+  FormHelperText,
+  CircularProgress
 } from "@mui/material";
 import { addContact, editContact } from "../store/slices/contactsSlice";
 
@@ -25,7 +26,7 @@ const phoneRegex = /^\+?[1-9]\d{1,14}$/;
 
 const contactTypes = ["home", "personal", "work"];
 
-export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
+export const ContactForm = ({ open, onClose, initialData, onSubmit }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -35,18 +36,20 @@ export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
   });
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
-    if (contact) {
+    if (initialData) {
       setFormData({
-        name: contact.name || "",
-        email: contact.email || "",
-        phoneNumber: contact.phoneNumber || "",
-        contactType: contact.contactType || "personal",
-        isFavourite: contact.isFavourite || false
+        name: initialData.name || "",
+        email: initialData.email || "",
+        phoneNumber: initialData.phoneNumber || "",
+        contactType: initialData.contactType || "personal",
+        isFavourite: initialData.isFavourite || false
       });
     } else {
       setFormData({
@@ -59,37 +62,27 @@ export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
     }
     setErrors({});
     setSubmitError("");
-  }, [contact]);
+    setHasUnsavedChanges(false);
+  }, [initialData, open]);
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
-    } else if (formData.name.length < 3) {
+    if (!formData.name || formData.name.length < 3) {
       newErrors.name = "Name must be at least 3 characters long";
-    } else if (formData.name.length > 30) {
-      newErrors.name = "Name must be at most 30 characters long";
     }
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = "Invalid email format";
+    if (!formData.email || !emailRegex.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
     }
 
-    if (!formData.phoneNumber.trim()) {
-      newErrors.phoneNumber = "Phone number is required";
-    } else if (!phoneRegex.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = "Phone number must be in format +XXXXXXXXXXX";
+    if (!formData.phoneNumber || !phoneRegex.test(formData.phoneNumber)) {
+      newErrors.phoneNumber =
+        "Please enter a valid phone number (e.g., +1234567890)";
     }
 
     if (!formData.contactType) {
-      newErrors.contactType = "Contact type is required";
-    } else if (!contactTypes.includes(formData.contactType)) {
-      newErrors.contactType = `Contact type must be one of [${contactTypes.join(
-        ", "
-      )}]`;
+      newErrors.contactType = "Please select a contact type";
     }
 
     setErrors(newErrors);
@@ -102,47 +95,71 @@ export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
       ...prev,
       [name]: name === "isFavourite" ? checked : value
     }));
+    setHasUnsavedChanges(true);
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: ""
-      }));
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
-    setSubmitError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError("");
+    setIsSubmitting(true);
 
     if (!validateForm()) {
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      if (contact) {
-        await dispatch(
-          editContact({ id: contact._id, contact: formData })
-        ).unwrap();
-        enqueueSnackbar("Contact updated successfully", { variant: "success" });
+      if (onSubmit) {
+        await onSubmit(formData);
       } else {
-        await dispatch(addContact(formData)).unwrap();
-        enqueueSnackbar("Contact created successfully", { variant: "success" });
+        if (initialData) {
+          await dispatch(
+            editContact({ id: initialData._id, contact: formData })
+          ).unwrap();
+          enqueueSnackbar("Contact updated successfully", {
+            variant: "success"
+          });
+        } else {
+          await dispatch(addContact(formData)).unwrap();
+          enqueueSnackbar("Contact created successfully", {
+            variant: "success"
+          });
+        }
       }
-      onSuccess();
       onClose();
     } catch (error) {
-      setSubmitError(error || "Operation failed");
-      enqueueSnackbar(error || "Operation failed", {
+      setSubmitError(error.message || "Operation failed");
+      enqueueSnackbar(error.message || "Operation failed", {
         variant: "error"
       });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (hasUnsavedChanges) {
+      if (
+        window.confirm(
+          "You have unsaved changes. Are you sure you want to close?"
+        )
+      ) {
+        onClose();
+      }
+    } else {
+      onClose();
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{contact ? "Edit Contact" : "Add New Contact"}</DialogTitle>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        {initialData ? "Edit Contact" : "Add New Contact"}
+      </DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>
           {submitError && (
@@ -161,6 +178,7 @@ export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
               error={!!errors.name}
               helperText={errors.name}
               inputProps={{ minLength: 3, maxLength: 30 }}
+              disabled={isSubmitting}
             />
             <TextField
               required
@@ -172,6 +190,7 @@ export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
               onChange={handleChange}
               error={!!errors.email}
               helperText={errors.email}
+              disabled={isSubmitting}
             />
             <TextField
               required
@@ -183,8 +202,13 @@ export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
               error={!!errors.phoneNumber}
               helperText={errors.phoneNumber}
               placeholder="+1234567890"
+              disabled={isSubmitting}
             />
-            <FormControl fullWidth error={!!errors.contactType}>
+            <FormControl
+              fullWidth
+              error={!!errors.contactType}
+              disabled={isSubmitting}
+            >
               <InputLabel>Contact Type</InputLabel>
               <Select
                 name="contactType"
@@ -209,6 +233,7 @@ export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
                   onChange={handleChange}
                   name="isFavourite"
                   color="primary"
+                  disabled={isSubmitting}
                 />
               }
               label="Favorite"
@@ -216,9 +241,22 @@ export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button type="submit" variant="contained">
-            {contact ? "Update" : "Create"}
+          <Button onClick={handleClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={isSubmitting}
+            startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
+          >
+            {isSubmitting
+              ? initialData
+                ? "Updating..."
+                : "Creating..."
+              : initialData
+              ? "Update"
+              : "Create"}
           </Button>
         </DialogActions>
       </form>
