@@ -62,11 +62,8 @@ export const removeContact = createAsyncThunk(
       const response = await deleteContact(id);
       return response;
     } catch (error) {
-      console.error("Delete contact error:", error);
       return rejectWithValue(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to delete contact"
+        error.response?.data?.message || "Failed to delete contact"
       );
     }
   }

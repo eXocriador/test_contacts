@@ -234,16 +234,10 @@ export const ContactsPage = () => {
                 <TableCell>{contact.contactType}</TableCell>
                 <TableCell>{contact.isFavourite ? "★" : "☆"}</TableCell>
                 <TableCell>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleEdit(contact)}
-                  >
+                  <IconButton onClick={() => handleEdit(contact)}>
                     <EditIcon />
                   </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteContact(contact._id)}
-                  >
+                  <IconButton onClick={() => handleDeleteContact(contact._id)}>
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>
@@ -252,7 +246,6 @@ export const ContactsPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
-
       <TablePagination
         component="div"
         count={totalPages * perPage}
@@ -270,11 +263,7 @@ export const ContactsPage = () => {
           setEditingContact(null);
         }}
         contact={editingContact}
-        onSuccess={() => {
-          setIsFormOpen(false);
-          setEditingContact(null);
-          loadContacts();
-        }}
+        onSubmit={editingContact ? handleEditContact : handleAddContact}
       />
     </Container>
   );
