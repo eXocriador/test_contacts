@@ -375,7 +375,7 @@ export const ContactsPage = () => {
             </TableHead>
             <TableBody>
               {contacts.map((contact) => (
-                <TableRow key={contact._id}>
+                <TableRow key={contact._id} sx={{ height: 48 }}>
                   <TableCell sx={{ width: 180 }}>{contact.name}</TableCell>
                   <TableCell sx={{ width: 140 }}>
                     {contact.phoneNumber}
@@ -407,6 +407,54 @@ export const ContactsPage = () => {
                       )}
                     </IconButton>
                   </TableCell>
+                </TableRow>
+              ))}
+              {Array.from({
+                length: Math.max(0, perPage - contacts.length)
+              }).map((_, idx) => (
+                <TableRow key={`empty-${idx}`} sx={{ height: 48 }}>
+                  <TableCell
+                    sx={{
+                      borderBottom: "1px solid #e0e0e0",
+                      background: "#fff",
+                      width: 180
+                    }}
+                  />
+                  <TableCell
+                    sx={{
+                      borderBottom: "1px solid #e0e0e0",
+                      background: "#fff",
+                      width: 140
+                    }}
+                  />
+                  <TableCell
+                    sx={{
+                      borderBottom: "1px solid #e0e0e0",
+                      background: "#fff",
+                      width: 220
+                    }}
+                  />
+                  <TableCell
+                    sx={{
+                      borderBottom: "1px solid #e0e0e0",
+                      background: "#fff",
+                      width: 100
+                    }}
+                  />
+                  <TableCell
+                    sx={{
+                      borderBottom: "1px solid #e0e0e0",
+                      background: "#fff",
+                      width: 100
+                    }}
+                  />
+                  <TableCell
+                    sx={{
+                      borderBottom: "1px solid #e0e0e0",
+                      background: "#fff",
+                      width: 80
+                    }}
+                  />
                 </TableRow>
               ))}
             </TableBody>
