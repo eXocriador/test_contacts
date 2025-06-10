@@ -1,26 +1,22 @@
-import express from 'express';
+import { Router } from 'express';
 import {
   getContactsController,
   getContactByIdController,
   createContactController,
   deleteContactController,
-  patchContactController,
   updateContactController,
-} from '../controllers/contacts.js';
-import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+  patchContactController,
+} from '../controllers/contactsController.js';
 import { validateBody } from '../middlewares/validateBody.js';
 import {
   createContactSchema,
   updateContactSchema,
-} from '../validation/contacts.js';
+} from '../schemas/contactsSchemas.js';
 import { isValidId } from '../middlewares/isValidId.js';
 import { authenticate } from '../middlewares/authenticate.js';
-import { validateContact } from '../middlewares/validateContact.js';
-import { validateId } from '../middlewares/validateId.js';
-import { validateQuery } from '../middlewares/validateQuery.js';
-import { auth } from '../middlewares/auth.js';
+import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 
-const router = express.Router();
+const contactsRouter = Router();
 
 // Add CORS headers middleware
 const corsHeaders = (req, res, next) => {
@@ -62,35 +58,36 @@ const corsHeaders = (req, res, next) => {
 };
 
 // Apply CORS headers to all routes
-router.use(corsHeaders);
+contactsRouter.use(corsHeaders);
 
-router.get('/', auth, validateQuery, ctrlWrapper(getContactsController));
-router.get(
+contactsRouter.use(authenticate);
+
+contactsRouter.get('/', ctrlWrapper(getContactsController));
+contactsRouter.get(
   '/:contactId',
-  auth,
   isValidId,
   ctrlWrapper(getContactByIdController),
 );
-router.post('/', auth, validateContact, ctrlWrapper(createContactController));
-router.delete(
+contactsRouter.post(
+  '/',
+  validateBody(createContactSchema),
+  ctrlWrapper(createContactController),
+);
+contactsRouter.delete(
   '/:contactId',
-  auth,
   isValidId,
   ctrlWrapper(deleteContactController),
 );
-router.put(
+contactsRouter.put(
   '/:contactId',
-  auth,
   isValidId,
-  validateContact,
   ctrlWrapper(updateContactController),
 );
-router.patch(
+contactsRouter.patch(
   '/:contactId',
-  auth,
   isValidId,
   validateBody(updateContactSchema),
   ctrlWrapper(patchContactController),
 );
 
-export default router;
+export default contactsRouter;
