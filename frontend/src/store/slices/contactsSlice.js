@@ -45,31 +45,43 @@ export const fetchContacts = createAsyncThunk(
     {
       page = 1,
       perPage = 10,
+      search = "",
       sortBy = "name",
       sortOrder = "asc",
-      search = ""
-    } = {},
+      isFavourite,
+      contactType
+    },
     { rejectWithValue }
   ) => {
     try {
-      console.log("Fetching contacts with search:", search);
       const params = new URLSearchParams({
-        page,
-        perPage,
+        page: page.toString(),
+        perPage: perPage.toString(),
         sortBy,
-        sortOrder,
-        ...(search && { search })
+        sortOrder
       });
 
-      const url = `/api/contacts?${params.toString()}`;
-      console.log("Sending request to:", url);
+      if (search) {
+        params.append("search", search);
+      }
 
-      const response = await axios.get(url, {
-        withCredentials: true
-      });
+      if (isFavourite !== undefined) {
+        params.append("isFavourite", isFavourite.toString());
+      }
 
-      console.log("Response received:", response.data);
-      return response.data;
+      if (contactType) {
+        params.append("contactType", contactType);
+      }
+
+      console.log(
+        "Sending request to:",
+        `${API_BASE_URL}/api/contacts?${params.toString()}`
+      );
+      const response = await axios.get(
+        `${API_BASE_URL}/api/contacts?${params.toString()}`
+      );
+      console.log("Received response:", response.data);
+      return response;
     } catch (error) {
       console.error("Error fetching contacts:", error);
       return rejectWithValue(
