@@ -208,6 +208,9 @@ export const ContactsPage = () => {
     dispatch(clearError());
   };
 
+  // Calculate empty rows for pagination
+  const emptyRows = perPage - contacts.length;
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
@@ -224,65 +227,83 @@ export const ContactsPage = () => {
         </Button>
       </Box>
 
-      <Box component="form" onSubmit={handleSearch} sx={{ mb: 3 }}>
+      {/* Unified filter/search panel, responsive */}
+      <Box
+        component="form"
+        onSubmit={handleSearch}
+        sx={{
+          mb: 3,
+          display: "flex",
+          flexWrap: { xs: "wrap", sm: "nowrap" },
+          gap: 2,
+          alignItems: "center",
+          flexDirection: { xs: "column", sm: "row" }
+        }}
+      >
+        <TextField
+          label="Search contacts"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          size="small"
+          sx={{ flex: 2, minWidth: 180, width: { xs: "100%", sm: "auto" } }}
+          InputProps={{
+            endAdornment: (
+              <IconButton type="submit" size="small">
+                <SearchIcon />
+              </IconButton>
+            )
+          }}
+        />
+        <FormControl
+          sx={{ minWidth: 100, width: { xs: "100%", sm: "auto" } }}
+          size="small"
+        >
+          <InputLabel>Per page</InputLabel>
+          <Select
+            value={perPage}
+            onChange={handlePerPageChange}
+            label="Per page"
+          >
+            <MenuItem value={5}>5</MenuItem>
+            <MenuItem value={10}>10</MenuItem>
+            <MenuItem value={20}>20</MenuItem>
+            <MenuItem value={50}>50</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl
+          sx={{ minWidth: 120, width: { xs: "100%", sm: "auto" } }}
+          size="small"
+        >
+          <InputLabel>Type</InputLabel>
+          <Select
+            value={contactTypeFilter}
+            onChange={handleContactTypeFilter}
+            label="Type"
+          >
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="home">Home</MenuItem>
+            <MenuItem value="personal">Personal</MenuItem>
+            <MenuItem value="work">Work</MenuItem>
+          </Select>
+        </FormControl>
         <Box
           sx={{
+            flex: 1,
             display: "flex",
-            gap: 2,
-            alignItems: "center",
-            flexWrap: "wrap"
+            justifyContent: { xs: "flex-start", sm: "flex-end" },
+            width: { xs: "100%", sm: "auto" }
           }}
         >
-          <TextField
-            label="Search contacts"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            size="small"
-            sx={{ flex: 2, minWidth: 220 }}
-            InputProps={{
-              endAdornment: (
-                <IconButton type="submit">
-                  <SearchIcon />
-                </IconButton>
-              )
-            }}
-          />
-          <FormControl sx={{ minWidth: 100 }} size="small">
-            <InputLabel>Per page</InputLabel>
-            <Select
-              value={perPage}
-              onChange={handlePerPageChange}
-              label="Per page"
-            >
-              <MenuItem value={5}>5</MenuItem>
-              <MenuItem value={10}>10</MenuItem>
-              <MenuItem value={20}>20</MenuItem>
-              <MenuItem value={50}>50</MenuItem>
-            </Select>
-          </FormControl>
           <Button
             variant={showFavoritesOnly ? "contained" : "outlined"}
             color="warning"
             size="small"
             onClick={handleFavoritesFilter}
-            sx={{ minWidth: 40 }}
+            sx={{ minWidth: 40, height: 40, borderRadius: 1 }}
             title="Show only favorites"
           >
             <StarIcon color={showFavoritesOnly ? "inherit" : "disabled"} />
           </Button>
-          <FormControl sx={{ minWidth: 120 }} size="small">
-            <InputLabel>Type</InputLabel>
-            <Select
-              value={contactTypeFilter}
-              onChange={handleContactTypeFilter}
-              label="Type"
-            >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value="home">Home</MenuItem>
-              <MenuItem value="personal">Personal</MenuItem>
-              <MenuItem value="work">Work</MenuItem>
-            </Select>
-          </FormControl>
         </Box>
       </Box>
 
@@ -292,8 +313,11 @@ export const ContactsPage = () => {
         </Alert>
       )}
 
-      <TableContainer component={Paper}>
-        <Table>
+      <TableContainer
+        component={Paper}
+        sx={{ width: "100%", overflowX: "auto" }}
+      >
+        <Table size="small" sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
               <TableCell
@@ -372,6 +396,15 @@ export const ContactsPage = () => {
                 </TableCell>
               </TableRow>
             ))}
+            {emptyRows > 0 &&
+              Array.from({ length: emptyRows }).map((_, idx) => (
+                <TableRow key={`empty-${idx}`}>
+                  <TableCell
+                    colSpan={6}
+                    sx={{ height: 48, background: "#fafafa" }}
+                  />
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>
