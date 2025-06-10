@@ -16,4 +16,4 @@ services:
       - key: JWT_REFRESH_SECRET
         sync: false
       - key: CORS_ORIGIN
-        value: https://your-frontend-url.vercel.app
+        value: https://test-contacts-indol.vercel.app

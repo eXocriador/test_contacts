@@ -24,6 +24,7 @@ export const serverSetup = () => {
         'http://localhost:5173',
         'http://localhost:3001',
         'https://test-contacts-indol.vercel.app',
+        'https://contacts-app-frontend.vercel.app',
       ],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
