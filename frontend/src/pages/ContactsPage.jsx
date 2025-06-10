@@ -182,17 +182,21 @@ export const ContactsPage = () => {
   }, [currentPage, totalPages, dispatch]);
 
   useEffect(() => {
-    dispatch(
-      fetchContacts({
-        page: currentPage,
-        perPage,
-        search: searchQuery,
-        sortBy,
-        sortOrder,
-        isFavourite: showFavoritesOnly ? true : undefined,
-        contactType: contactTypeFilter || undefined
-      })
-    );
+    const timer = setTimeout(() => {
+      dispatch(
+        fetchContacts({
+          page: currentPage,
+          perPage,
+          search: searchQuery,
+          sortBy,
+          sortOrder,
+          isFavourite: showFavoritesOnly ? true : undefined,
+          contactType: contactTypeFilter || undefined
+        })
+      );
+    }, 300); // Debounce search for 300ms
+
+    return () => clearTimeout(timer);
   }, [
     currentPage,
     perPage,
@@ -203,10 +207,6 @@ export const ContactsPage = () => {
     contactTypeFilter,
     dispatch
   ]);
-
-  useEffect(() => {
-    setSearchQuery(search);
-  }, [search]);
 
   const handleOpenForm = (contact = null) => {
     setEditingContact(contact);
@@ -310,17 +310,10 @@ export const ContactsPage = () => {
     dispatch(setPage(1));
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      dispatch(setSearch(searchQuery.trim()));
-    } else {
-      dispatch(clearSearch());
-    }
-  };
-
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+    const value = e.target.value;
+    setSearchQuery(value);
+    dispatch(setSearch(value));
   };
 
   const handleClearSearch = () => {
@@ -379,8 +372,6 @@ export const ContactsPage = () => {
 
       {/* Search and filters */}
       <Box
-        component="form"
-        onSubmit={handleSearch}
         sx={{
           mb: 3,
           display: "flex",
@@ -403,9 +394,7 @@ export const ContactsPage = () => {
               </IconButton>
             ),
             startAdornment: (
-              <IconButton type="submit" size="small">
-                <SearchIcon />
-              </IconButton>
+              <SearchIcon sx={{ color: "action.active", mr: 1 }} />
             )
           }}
           placeholder="Search by name, email or phone..."
