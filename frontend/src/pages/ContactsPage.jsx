@@ -23,7 +23,11 @@ import {
   InputLabel,
   Grid,
   Alert,
-  Snackbar
+  Snackbar,
+  Card,
+  CardContent,
+  CardActions,
+  Tooltip
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -47,6 +51,84 @@ import {
 } from "../store/slices/contactsSlice";
 import { ContactForm } from "../components/ContactForm";
 import Pagination from "../components/Pagination";
+
+const ContactCard = ({ contact, onEdit, onDelete, onToggleFavorite }) => (
+  <Card
+    sx={{
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
+      boxShadow: 2
+    }}
+  >
+    <CardContent>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 1
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 600,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap"
+          }}
+        >
+          {contact.name}
+        </Typography>
+        <Tooltip
+          title={
+            contact.isFavourite ? "Remove from favorites" : "Add to favorites"
+          }
+        >
+          <IconButton onClick={() => onToggleFavorite(contact)}>
+            {contact.isFavourite ? (
+              <StarIcon color="warning" />
+            ) : (
+              <StarBorderIcon />
+            )}
+          </IconButton>
+        </Tooltip>
+      </Box>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+        <b>Phone:</b> {contact.phoneNumber}
+      </Typography>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{
+          mb: 0.5,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap"
+        }}
+      >
+        <b>Email:</b> {contact.email}
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        <b>Type:</b> {contact.contactType}
+      </Typography>
+    </CardContent>
+    <CardActions sx={{ justifyContent: "flex-end", gap: 1 }}>
+      <Tooltip title="Edit">
+        <IconButton color="primary" onClick={() => onEdit(contact)}>
+          <EditIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Delete">
+        <IconButton color="error" onClick={() => onDelete(contact._id)}>
+          <DeleteIcon />
+        </IconButton>
+      </Tooltip>
+    </CardActions>
+  </Card>
+);
 
 export const ContactsPage = () => {
   const dispatch = useDispatch();
@@ -310,202 +392,19 @@ export const ContactsPage = () => {
         </Alert>
       )}
 
-      {/* Contacts Table with static height wrapper */}
-      <Box
-        sx={{
-          minHeight: `${48 * perPage + 56}px`,
-          transition: "min-height 0.2s",
-          position: "relative"
-        }}
-      >
-        <TableContainer
-          component={Paper}
-          sx={{ width: "100%", overflowX: "auto" }}
-        >
-          <Table size="small" sx={{ minWidth: 650, tableLayout: "fixed" }}>
-            <TableHead>
-              <TableRow>
-                <TableCell
-                  sx={{
-                    width: 180,
-                    minWidth: 180,
-                    maxWidth: 180,
-                    fontWeight: "bold",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap"
-                  }}
-                  onClick={() => handleSort("name")}
-                  style={{ cursor: "pointer" }}
-                >
-                  Name {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    width: 140,
-                    minWidth: 140,
-                    maxWidth: 140,
-                    fontWeight: "bold",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap"
-                  }}
-                  onClick={() => handleSort("phoneNumber")}
-                  style={{ cursor: "pointer" }}
-                >
-                  Phone{" "}
-                  {sortBy === "phoneNumber" &&
-                    (sortOrder === "asc" ? "↑" : "↓")}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    width: 220,
-                    minWidth: 220,
-                    maxWidth: 220,
-                    fontWeight: "bold",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap"
-                  }}
-                  onClick={() => handleSort("email")}
-                  style={{ cursor: "pointer" }}
-                >
-                  Email{" "}
-                  {sortBy === "email" && (sortOrder === "asc" ? "↑" : "↓")}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    width: 100,
-                    minWidth: 100,
-                    maxWidth: 100,
-                    fontWeight: "bold",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap"
-                  }}
-                  onClick={() => handleSort("contactType")}
-                  style={{ cursor: "pointer" }}
-                >
-                  Type{" "}
-                  {sortBy === "contactType" &&
-                    (sortOrder === "asc" ? "↑" : "↓")}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    width: 100,
-                    minWidth: 100,
-                    maxWidth: 100,
-                    fontWeight: "bold",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap"
-                  }}
-                >
-                  Actions
-                </TableCell>
-                <TableCell
-                  sx={{
-                    width: 80,
-                    minWidth: 80,
-                    maxWidth: 80,
-                    fontWeight: "bold",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap"
-                  }}
-                  align="right"
-                  onClick={() => handleSort("isFavourite")}
-                  style={{ cursor: "pointer" }}
-                >
-                  Fav{" "}
-                  {sortBy === "isFavourite" &&
-                    (sortOrder === "asc" ? "↑" : "↓")}
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {contacts.map((contact) => (
-                <TableRow key={contact._id} sx={{ height: 48 }}>
-                  <TableCell
-                    sx={{
-                      width: 180,
-                      minWidth: 180,
-                      maxWidth: 180,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap"
-                    }}
-                  >
-                    {contact.name}
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      width: 140,
-                      minWidth: 140,
-                      maxWidth: 140,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap"
-                    }}
-                  >
-                    {contact.phoneNumber}
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      width: 220,
-                      minWidth: 220,
-                      maxWidth: 220,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap"
-                    }}
-                  >
-                    {contact.email}
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      width: 100,
-                      minWidth: 100,
-                      maxWidth: 100,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap"
-                    }}
-                  >
-                    {contact.contactType}
-                  </TableCell>
-                  <TableCell sx={{ width: 100, minWidth: 100, maxWidth: 100 }}>
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleOpenForm(contact)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      color="error"
-                      onClick={() => handleDeleteContact(contact._id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                  <TableCell
-                    sx={{ width: 80, minWidth: 80, maxWidth: 80 }}
-                    align="right"
-                  >
-                    <IconButton onClick={() => handleToggleFavorite(contact)}>
-                      {contact.isFavourite ? (
-                        <StarIcon color="warning" />
-                      ) : (
-                        <StarBorderIcon />
-                      )}
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
+      {/* Responsive Grid of Contact Cards */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        {contacts.map((contact) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={contact._id}>
+            <ContactCard
+              contact={contact}
+              onEdit={handleOpenForm}
+              onDelete={handleDeleteContact}
+              onToggleFavorite={handleToggleFavorite}
+            />
+          </Grid>
+        ))}
+      </Grid>
 
       <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
         <Pagination
@@ -515,6 +414,7 @@ export const ContactsPage = () => {
         />
       </Box>
 
+      {/* Edit/Add Contact Dialog */}
       <Dialog open={openForm} onClose={handleCloseForm} maxWidth="sm" fullWidth>
         <DialogTitle>
           {editingContact ? "Edit Contact" : "Add New Contact"}
@@ -528,6 +428,7 @@ export const ContactsPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Custom Delete Dialog */}
       <Dialog
         open={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
