@@ -16,11 +16,11 @@ export const getContacts = async (
     sortOrder
   });
 
-  if (search) {
-    params.append("search", search);
+  if (search && search.trim()) {
+    params.append("search", search.trim());
   }
   if (isFavourite !== undefined) {
-    params.append("isFavourite", isFavourite);
+    params.append("isFavourite", isFavourite.toString());
   }
   if (contactType) {
     params.append("contactType", contactType);

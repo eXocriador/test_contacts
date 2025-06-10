@@ -332,6 +332,7 @@ export const ContactsPage = () => {
               </IconButton>
             )
           }}
+          placeholder="Search by name, email or phone..."
         />
         <FormControl
           sx={{ minWidth: 100, width: { xs: "100%", sm: "auto" } }}

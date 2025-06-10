@@ -108,7 +108,7 @@ const contactsSlice = createSlice({
   initialState: getInitialState(),
   reducers: {
     setSearch: (state, action) => {
-      state.search = action.payload;
+      state.search = action.payload.trim();
       state.currentPage = 1;
       localStorage.setItem(
         "contactsState",
