@@ -18,7 +18,7 @@ export const fetchContacts = createAsyncThunk(
         sortBy,
         sortOrder
       );
-      return response;
+      return response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch contacts"
@@ -32,7 +32,7 @@ export const addContact = createAsyncThunk(
   async (contact, { rejectWithValue }) => {
     try {
       const response = await createContact(contact);
-      return response;
+      return response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to create contact"
@@ -46,7 +46,7 @@ export const editContact = createAsyncThunk(
   async ({ id, contact }, { rejectWithValue }) => {
     try {
       const response = await updateContact(id, contact);
-      return response;
+      return response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to update contact"
@@ -59,8 +59,8 @@ export const removeContact = createAsyncThunk(
   "contacts/removeContact",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await deleteContact(id);
-      return response;
+      await deleteContact(id);
+      return { _id: id };
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to delete contact"
@@ -132,7 +132,7 @@ const contactsSlice = createSlice({
       })
       .addCase(addContact.fulfilled, (state, action) => {
         state.loading = false;
-        state.items.push(action.payload);
+        state.items = [...state.items, action.payload];
       })
       .addCase(addContact.rejected, (state, action) => {
         state.loading = false;
