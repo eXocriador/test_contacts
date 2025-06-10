@@ -208,9 +208,6 @@ export const ContactsPage = () => {
     dispatch(clearError());
   };
 
-  // Calculate empty rows for pagination
-  const emptyRows = perPage - contacts.length;
-
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
@@ -313,115 +310,109 @@ export const ContactsPage = () => {
         </Alert>
       )}
 
-      <TableContainer
-        component={Paper}
-        sx={{ width: "100%", overflowX: "auto" }}
+      {/* Contacts Table with static height wrapper */}
+      <Box
+        sx={{
+          minHeight: `${48 * perPage + 56}px`,
+          transition: "min-height 0.2s",
+          position: "relative"
+        }}
       >
-        <Table size="small" sx={{ minWidth: 650 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell
-                sx={{ width: 180, fontWeight: "bold" }}
-                onClick={() => handleSort("name")}
-                style={{ cursor: "pointer" }}
-              >
-                Name {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
-              </TableCell>
-              <TableCell
-                sx={{ width: 140, fontWeight: "bold" }}
-                onClick={() => handleSort("phoneNumber")}
-                style={{ cursor: "pointer" }}
-              >
-                Phone{" "}
-                {sortBy === "phoneNumber" && (sortOrder === "asc" ? "↑" : "↓")}
-              </TableCell>
-              <TableCell
-                sx={{ width: 220, fontWeight: "bold" }}
-                onClick={() => handleSort("email")}
-                style={{ cursor: "pointer" }}
-              >
-                Email {sortBy === "email" && (sortOrder === "asc" ? "↑" : "↓")}
-              </TableCell>
-              <TableCell
-                sx={{ width: 100, fontWeight: "bold" }}
-                onClick={() => handleSort("contactType")}
-                style={{ cursor: "pointer" }}
-              >
-                Type{" "}
-                {sortBy === "contactType" && (sortOrder === "asc" ? "↑" : "↓")}
-              </TableCell>
-              <TableCell sx={{ width: 100, fontWeight: "bold" }}>
-                Actions
-              </TableCell>
-              <TableCell
-                sx={{ width: 80, fontWeight: "bold" }}
-                align="right"
-                onClick={() => handleSort("isFavourite")}
-                style={{ cursor: "pointer" }}
-              >
-                Fav{" "}
-                {sortBy === "isFavourite" && (sortOrder === "asc" ? "↑" : "↓")}
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {contacts.map((contact) => (
-              <TableRow key={contact._id}>
-                <TableCell sx={{ width: 180 }}>{contact.name}</TableCell>
-                <TableCell sx={{ width: 140 }}>{contact.phoneNumber}</TableCell>
-                <TableCell sx={{ width: 220 }}>{contact.email}</TableCell>
-                <TableCell sx={{ width: 100 }}>{contact.contactType}</TableCell>
-                <TableCell sx={{ width: 100 }}>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleOpenForm(contact)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteContact(contact._id)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
+        <TableContainer
+          component={Paper}
+          sx={{ width: "100%", overflowX: "auto" }}
+        >
+          <Table size="small" sx={{ minWidth: 650 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell
+                  sx={{ width: 180, fontWeight: "bold" }}
+                  onClick={() => handleSort("name")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Name {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
                 </TableCell>
-                <TableCell sx={{ width: 80 }} align="right">
-                  <IconButton onClick={() => handleToggleFavorite(contact)}>
-                    {contact.isFavourite ? (
-                      <StarIcon color="warning" />
-                    ) : (
-                      <StarBorderIcon />
-                    )}
-                  </IconButton>
+                <TableCell
+                  sx={{ width: 140, fontWeight: "bold" }}
+                  onClick={() => handleSort("phoneNumber")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Phone{" "}
+                  {sortBy === "phoneNumber" &&
+                    (sortOrder === "asc" ? "↑" : "↓")}
+                </TableCell>
+                <TableCell
+                  sx={{ width: 220, fontWeight: "bold" }}
+                  onClick={() => handleSort("email")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Email{" "}
+                  {sortBy === "email" && (sortOrder === "asc" ? "↑" : "↓")}
+                </TableCell>
+                <TableCell
+                  sx={{ width: 100, fontWeight: "bold" }}
+                  onClick={() => handleSort("contactType")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Type{" "}
+                  {sortBy === "contactType" &&
+                    (sortOrder === "asc" ? "↑" : "↓")}
+                </TableCell>
+                <TableCell sx={{ width: 100, fontWeight: "bold" }}>
+                  Actions
+                </TableCell>
+                <TableCell
+                  sx={{ width: 80, fontWeight: "bold" }}
+                  align="right"
+                  onClick={() => handleSort("isFavourite")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Fav{" "}
+                  {sortBy === "isFavourite" &&
+                    (sortOrder === "asc" ? "↑" : "↓")}
                 </TableCell>
               </TableRow>
-            ))}
-            {emptyRows > 0 &&
-              Array.from({ length: emptyRows }).map((_, idx) => (
-                <TableRow key={`empty-${idx}`}>
-                  <TableCell
-                    sx={{ height: 48, borderBottom: "1px solid #e0e0e0" }}
-                  />
-                  <TableCell
-                    sx={{ height: 48, borderBottom: "1px solid #e0e0e0" }}
-                  />
-                  <TableCell
-                    sx={{ height: 48, borderBottom: "1px solid #e0e0e0" }}
-                  />
-                  <TableCell
-                    sx={{ height: 48, borderBottom: "1px solid #e0e0e0" }}
-                  />
-                  <TableCell
-                    sx={{ height: 48, borderBottom: "1px solid #e0e0e0" }}
-                  />
-                  <TableCell
-                    sx={{ height: 48, borderBottom: "1px solid #e0e0e0" }}
-                  />
+            </TableHead>
+            <TableBody>
+              {contacts.map((contact) => (
+                <TableRow key={contact._id}>
+                  <TableCell sx={{ width: 180 }}>{contact.name}</TableCell>
+                  <TableCell sx={{ width: 140 }}>
+                    {contact.phoneNumber}
+                  </TableCell>
+                  <TableCell sx={{ width: 220 }}>{contact.email}</TableCell>
+                  <TableCell sx={{ width: 100 }}>
+                    {contact.contactType}
+                  </TableCell>
+                  <TableCell sx={{ width: 100 }}>
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleOpenForm(contact)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      onClick={() => handleDeleteContact(contact._id)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                  <TableCell sx={{ width: 80 }} align="right">
+                    <IconButton onClick={() => handleToggleFavorite(contact)}>
+                      {contact.isFavourite ? (
+                        <StarIcon color="warning" />
+                      ) : (
+                        <StarBorderIcon />
+                      )}
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
               ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
 
       <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
         <Pagination
