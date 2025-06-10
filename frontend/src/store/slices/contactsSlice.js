@@ -110,10 +110,30 @@ const contactsSlice = createSlice({
     setSearch: (state, action) => {
       state.search = action.payload;
       state.currentPage = 1;
+      localStorage.setItem(
+        "contactsState",
+        JSON.stringify({
+          currentPage: state.currentPage,
+          perPage: state.perPage,
+          sortBy: state.sortBy,
+          sortOrder: state.sortOrder,
+          search: state.search
+        })
+      );
     },
     clearSearch: (state) => {
       state.search = "";
       state.currentPage = 1;
+      localStorage.setItem(
+        "contactsState",
+        JSON.stringify({
+          currentPage: state.currentPage,
+          perPage: state.perPage,
+          sortBy: state.sortBy,
+          sortOrder: state.sortOrder,
+          search: state.search
+        })
+      );
     },
     setSort: (state, action) => {
       const { field, order } = action.payload;

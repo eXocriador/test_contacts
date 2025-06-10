@@ -312,7 +312,11 @@ export const ContactsPage = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    dispatch(setSearch(searchQuery));
+    if (searchQuery.trim()) {
+      dispatch(setSearch(searchQuery.trim()));
+    } else {
+      dispatch(clearSearch());
+    }
   };
 
   const handleSearchChange = (e) => {
@@ -373,7 +377,7 @@ export const ContactsPage = () => {
         </Button>
       </Box>
 
-      {/* Unified filter/search panel */}
+      {/* Search and filters */}
       <Box
         component="form"
         onSubmit={handleSearch}
@@ -406,6 +410,20 @@ export const ContactsPage = () => {
           }}
           placeholder="Search by name, email or phone..."
         />
+
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Per Page</InputLabel>
+          <Select
+            value={perPage}
+            onChange={handlePerPageChange}
+            label="Per Page"
+          >
+            <MenuItem value={5}>5</MenuItem>
+            <MenuItem value={10}>10</MenuItem>
+            <MenuItem value={20}>20</MenuItem>
+            <MenuItem value={50}>50</MenuItem>
+          </Select>
+        </FormControl>
 
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button
