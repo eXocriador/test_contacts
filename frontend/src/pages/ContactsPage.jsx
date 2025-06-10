@@ -43,7 +43,7 @@ import {
   setPerPage,
   clearError
 } from "../store/slices/contactsSlice";
-import ContactForm from "../components/ContactForm";
+import { ContactForm } from "../components/ContactForm";
 import Pagination from "../components/Pagination";
 
 const ContactsPage = () => {
