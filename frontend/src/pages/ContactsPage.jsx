@@ -161,7 +161,7 @@ export const ContactsPage = () => {
 
   const [openForm, setOpenForm] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(search);
   const [showError, setShowError] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [contactToDelete, setContactToDelete] = useState(null);
@@ -183,6 +183,7 @@ export const ContactsPage = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
+      console.log("Fetching contacts with search:", searchQuery); // Debug log
       dispatch(
         fetchContacts({
           page: currentPage,
@@ -194,7 +195,7 @@ export const ContactsPage = () => {
           contactType: contactTypeFilter || undefined
         })
       );
-    }, 300); // Debounce search for 300ms
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [
@@ -312,11 +313,13 @@ export const ContactsPage = () => {
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
+    console.log("Search value changed:", value); // Debug log
     setSearchQuery(value);
     dispatch(setSearch(value));
   };
 
   const handleClearSearch = () => {
+    console.log("Clearing search"); // Debug log
     setSearchQuery("");
     dispatch(clearSearch());
   };

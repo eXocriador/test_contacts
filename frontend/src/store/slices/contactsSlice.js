@@ -6,6 +6,7 @@ import {
   updateContact,
   deleteContact
 } from "../../services/contacts";
+import axios from "axios";
 
 const getInitialState = () => {
   const savedState = localStorage.getItem("contactsState");
@@ -39,19 +40,38 @@ const getInitialState = () => {
 export const fetchContacts = createAsyncThunk(
   "contacts/fetchContacts",
   async (
-    { page, perPage, search, sortBy, sortOrder, isFavourite, contactType },
+    {
+      page = 1,
+      perPage = 10,
+      search = "",
+      sortBy = "name",
+      sortOrder = "asc",
+      isFavourite,
+      contactType
+    },
     { rejectWithValue }
   ) => {
     try {
-      const response = await getContacts(
-        page,
-        perPage,
-        search,
+      const params = new URLSearchParams({
+        page: page.toString(),
+        perPage: perPage.toString(),
         sortBy,
-        sortOrder,
-        isFavourite,
-        contactType
-      );
+        sortOrder
+      });
+
+      if (search) {
+        params.append("search", search);
+      }
+
+      if (isFavourite !== undefined) {
+        params.append("isFavourite", isFavourite.toString());
+      }
+
+      if (contactType) {
+        params.append("contactType", contactType);
+      }
+
+      const response = await axios.get(`/api/contacts?${params.toString()}`);
       return response;
     } catch (error) {
       return rejectWithValue(
