@@ -8,7 +8,10 @@ import {
 } from "../../services/contacts";
 import axios from "axios";
 
-const API_BASE_URL = "https://contacts-app-backend.onrender.com"; // Render backend URL
+const API_BASE_URL = "https://test-contacts-x6ri.onrender.com"; // Render backend URL
+
+// Configure axios defaults
+axios.defaults.withCredentials = true;
 
 const getInitialState = () => {
   const savedState = localStorage.getItem("contactsState");
@@ -41,57 +44,11 @@ const getInitialState = () => {
 
 export const fetchContacts = createAsyncThunk(
   "contacts/fetchContacts",
-  async (
-    {
-      page = 1,
-      perPage = 10,
-      search = "",
-      sortBy = "name",
-      sortOrder = "asc",
-      isFavourite,
-      contactType
-    },
-    { rejectWithValue }
-  ) => {
+  async (params, { rejectWithValue }) => {
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        perPage: perPage.toString(),
-        sortBy,
-        sortOrder
-      });
-
-      if (search) {
-        params.append("search", search);
-      }
-
-      if (isFavourite !== undefined) {
-        params.append("isFavourite", isFavourite.toString());
-      }
-
-      if (contactType) {
-        params.append("contactType", contactType);
-      }
-
-      console.log(
-        "Sending request to:",
-        `${API_BASE_URL}/api/contacts?${params.toString()}`
-      );
-
-      const response = await axios.get(
-        `${API_BASE_URL}/api/contacts?${params.toString()}`,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json"
-          }
-        }
-      );
-
-      console.log("Received response:", response.data);
-      return response;
+      const response = await axios.get(`${API_BASE_URL}/contacts`, { params });
+      return response.data;
     } catch (error) {
-      console.error("Error fetching contacts:", error);
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch contacts"
       );
