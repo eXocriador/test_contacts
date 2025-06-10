@@ -19,11 +19,15 @@ export const loginUserController = async (req, res) => {
 
   res.cookie('refreshToken', session.refreshToken, {
     httpOnly: true,
+    secure: true,
+    sameSite: 'none',
     expires: session.refreshTokenValidUntil,
   });
 
   res.cookie('sessionId', session._id, {
     httpOnly: true,
+    secure: true,
+    sameSite: 'none',
     expires: session.refreshTokenValidUntil,
   });
 
@@ -42,8 +46,16 @@ export const logoutUserController = async (req, res) => {
     await logoutUser(req.cookies.sessionId);
   }
 
-  res.clearCookie('sessionId');
-  res.clearCookie('refreshToken');
+  res.clearCookie('sessionId', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+  });
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+  });
 
   res.status(204).send();
 };
@@ -51,11 +63,15 @@ export const logoutUserController = async (req, res) => {
 const setupSession = (res, session) => {
   res.cookie('refreshToken', session.refreshToken, {
     httpOnly: true,
+    secure: true,
+    sameSite: 'none',
     expires: session.refreshTokenValidUntil,
   });
 
   res.cookie('sessionId', session._id, {
     httpOnly: true,
+    secure: true,
+    sameSite: 'none',
     expires: session.refreshTokenValidUntil,
   });
 };

@@ -19,18 +19,19 @@ export const serverSetup = () => {
   // Enable CORS for all routes
   app.use(
     cors({
-      origin: [
-        'https://test-contacts-indol.vercel.app',
-        'http://localhost:3001',
-      ],
+      origin: 'https://test-contacts-indol.vercel.app',
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
       credentials: true,
       exposedHeaders: ['Set-Cookie'],
       preflightContinue: false,
       optionsSuccessStatus: 204,
+      maxAge: 86400, // 24 hours
     }),
   );
+
+  // Handle preflight requests
+  app.options('*', cors());
 
   app.use(express.json());
   app.use(cookieParser());
