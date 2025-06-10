@@ -38,14 +38,19 @@ const getInitialState = () => {
 
 export const fetchContacts = createAsyncThunk(
   "contacts/fetchContacts",
-  async ({ page, perPage, search, sortBy, sortOrder }, { rejectWithValue }) => {
+  async (
+    { page, perPage, search, sortBy, sortOrder, isFavourite, contactType },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await getContacts(
         page,
         perPage,
         search,
         sortBy,
-        sortOrder
+        sortOrder,
+        isFavourite,
+        contactType
       );
       return response;
     } catch (error) {

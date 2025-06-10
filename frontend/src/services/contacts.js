@@ -5,7 +5,9 @@ export const getContacts = async (
   perPage = 10,
   search = "",
   sortBy = "name",
-  sortOrder = "asc"
+  sortOrder = "asc",
+  isFavourite,
+  contactType
 ) => {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -16,6 +18,12 @@ export const getContacts = async (
 
   if (search) {
     params.append("search", search);
+  }
+  if (isFavourite !== undefined) {
+    params.append("isFavourite", isFavourite);
+  }
+  if (contactType) {
+    params.append("contactType", contactType);
   }
 
   const response = await api.get(`/contacts?${params.toString()}`);
