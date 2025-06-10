@@ -29,7 +29,9 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Search as SearchIcon
+  Search as SearchIcon,
+  Star as StarIcon,
+  StarBorder as StarBorderIcon
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -64,10 +66,34 @@ export const ContactsPage = () => {
   const [editingContact, setEditingContact] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showError, setShowError] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [contactToDelete, setContactToDelete] = useState(null);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [contactTypeFilter, setContactTypeFilter] = useState("");
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "ArrowRight" && currentPage < totalPages) {
+        dispatch(setPage(currentPage + 1));
+      } else if (e.key === "ArrowLeft" && currentPage > 1) {
+        dispatch(setPage(currentPage - 1));
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentPage, totalPages, dispatch]);
 
   useEffect(() => {
     loadContacts();
-  }, [currentPage, perPage, search, sortBy, sortOrder]);
+  }, [
+    currentPage,
+    perPage,
+    search,
+    sortBy,
+    sortOrder,
+    showFavoritesOnly,
+    contactTypeFilter
+  ]);
 
   const loadContacts = () => {
     dispatch(
@@ -76,7 +102,9 @@ export const ContactsPage = () => {
         perPage,
         search,
         sortBy,
-        sortOrder
+        sortOrder,
+        isFavourite: showFavoritesOnly ? true : undefined,
+        contactType: contactTypeFilter || undefined
       })
     );
   };
@@ -107,10 +135,17 @@ export const ContactsPage = () => {
     }
   };
 
-  const handleDeleteContact = async (id) => {
-    if (window.confirm("Are you sure you want to delete this contact?")) {
+  const handleDeleteContact = (id) => {
+    setContactToDelete(id);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteContact = async () => {
+    if (contactToDelete) {
       try {
-        await dispatch(removeContact(id)).unwrap();
+        await dispatch(removeContact(contactToDelete)).unwrap();
+        setShowDeleteDialog(false);
+        setContactToDelete(null);
         if (contacts.length === 1 && currentPage > 1) {
           dispatch(setPage(currentPage - 1));
         } else {
@@ -120,6 +155,30 @@ export const ContactsPage = () => {
         setShowError(true);
       }
     }
+  };
+
+  const handleToggleFavorite = async (contact) => {
+    try {
+      await dispatch(
+        editContact({
+          id: contact._id,
+          contact: { isFavourite: !contact.isFavourite }
+        })
+      ).unwrap();
+      loadContacts();
+    } catch (error) {
+      setShowError(true);
+    }
+  };
+
+  const handleFavoritesFilter = () => {
+    setShowFavoritesOnly((prev) => !prev);
+    dispatch(setPage(1));
+  };
+
+  const handleContactTypeFilter = (e) => {
+    setContactTypeFilter(e.target.value);
+    dispatch(setPage(1));
   };
 
   const handleSearch = (e) => {
@@ -179,19 +238,47 @@ export const ContactsPage = () => {
             />
           </Grid>
           <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Contacts per page</InputLabel>
-              <Select
-                value={perPage}
-                onChange={handlePerPageChange}
-                label="Contacts per page"
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <FormControl sx={{ minWidth: 120 }}>
+                <InputLabel>Per page</InputLabel>
+                <Select
+                  value={perPage}
+                  onChange={handlePerPageChange}
+                  label="Per page"
+                  size="small"
+                >
+                  <MenuItem value={5}>5</MenuItem>
+                  <MenuItem value={10}>10</MenuItem>
+                  <MenuItem value={20}>20</MenuItem>
+                  <MenuItem value={50}>50</MenuItem>
+                </Select>
+              </FormControl>
+              <Button
+                variant={showFavoritesOnly ? "contained" : "outlined"}
+                color="warning"
+                size="small"
+                onClick={handleFavoritesFilter}
+                sx={{ minWidth: 40 }}
+                title="Show only favorites"
               >
-                <MenuItem value={5}>5</MenuItem>
-                <MenuItem value={10}>10</MenuItem>
-                <MenuItem value={20}>20</MenuItem>
-                <MenuItem value={50}>50</MenuItem>
-              </Select>
-            </FormControl>
+                <StarIcon color={showFavoritesOnly ? "inherit" : "disabled"} />
+              </Button>
+              <FormControl sx={{ minWidth: 120 }}>
+                <InputLabel>Type</InputLabel>
+                <Select
+                  value={contactTypeFilter}
+                  onChange={handleContactTypeFilter}
+                  label="Type"
+                  size="small"
+                >
+                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="personal">Personal</MenuItem>
+                  <MenuItem value="work">Work</MenuItem>
+                  <MenuItem value="family">Family</MenuItem>
+                  <MenuItem value="other">Other</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Grid>
         </Grid>
       </Box>
@@ -207,42 +294,65 @@ export const ContactsPage = () => {
           <TableHead>
             <TableRow>
               <TableCell
+                sx={{ width: 180, fontWeight: "bold" }}
                 onClick={() => handleSort("name")}
-                sx={{ cursor: "pointer" }}
+                style={{ cursor: "pointer" }}
               >
                 Name {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
               </TableCell>
               <TableCell
+                sx={{ width: 140, fontWeight: "bold" }}
                 onClick={() => handleSort("phoneNumber")}
-                sx={{ cursor: "pointer" }}
+                style={{ cursor: "pointer" }}
               >
                 Phone{" "}
                 {sortBy === "phoneNumber" && (sortOrder === "asc" ? "↑" : "↓")}
               </TableCell>
               <TableCell
+                sx={{ width: 220, fontWeight: "bold" }}
                 onClick={() => handleSort("email")}
-                sx={{ cursor: "pointer" }}
+                style={{ cursor: "pointer" }}
               >
                 Email {sortBy === "email" && (sortOrder === "asc" ? "↑" : "↓")}
               </TableCell>
               <TableCell
+                sx={{ width: 100, fontWeight: "bold" }}
                 onClick={() => handleSort("contactType")}
-                sx={{ cursor: "pointer" }}
+                style={{ cursor: "pointer" }}
               >
                 Type{" "}
                 {sortBy === "contactType" && (sortOrder === "asc" ? "↑" : "↓")}
               </TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell
+                sx={{ width: 80, fontWeight: "bold" }}
+                onClick={() => handleSort("isFavourite")}
+                style={{ cursor: "pointer" }}
+              >
+                Fav{" "}
+                {sortBy === "isFavourite" && (sortOrder === "asc" ? "↑" : "↓")}
+              </TableCell>
+              <TableCell sx={{ width: 100, fontWeight: "bold" }}>
+                Actions
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {contacts.map((contact) => (
               <TableRow key={contact._id}>
-                <TableCell>{contact.name}</TableCell>
-                <TableCell>{contact.phoneNumber}</TableCell>
-                <TableCell>{contact.email}</TableCell>
-                <TableCell>{contact.contactType}</TableCell>
-                <TableCell>
+                <TableCell sx={{ width: 180 }}>{contact.name}</TableCell>
+                <TableCell sx={{ width: 140 }}>{contact.phoneNumber}</TableCell>
+                <TableCell sx={{ width: 220 }}>{contact.email}</TableCell>
+                <TableCell sx={{ width: 100 }}>{contact.contactType}</TableCell>
+                <TableCell sx={{ width: 80 }}>
+                  <IconButton onClick={() => handleToggleFavorite(contact)}>
+                    {contact.isFavourite ? (
+                      <StarIcon color="warning" />
+                    ) : (
+                      <StarBorderIcon />
+                    )}
+                  </IconButton>
+                </TableCell>
+                <TableCell sx={{ width: 100 }}>
                   <IconButton
                     color="primary"
                     onClick={() => handleOpenForm(contact)}
@@ -281,6 +391,22 @@ export const ContactsPage = () => {
             onCancel={handleCloseForm}
           />
         </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+      >
+        <DialogTitle>Delete Contact</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this contact?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
+          <Button color="error" onClick={confirmDeleteContact}>
+            Delete
+          </Button>
+        </DialogActions>
       </Dialog>
 
       <Snackbar
