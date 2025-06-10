@@ -7,6 +7,35 @@ import {
   deleteContact
 } from "../../services/contacts";
 
+const getInitialState = () => {
+  const savedState = localStorage.getItem("contactsState");
+  if (savedState) {
+    const parsedState = JSON.parse(savedState);
+    return {
+      items: [],
+      loading: false,
+      error: null,
+      totalPages: 1,
+      currentPage: parsedState.currentPage || 1,
+      perPage: parsedState.perPage || 10,
+      search: parsedState.search || "",
+      sortBy: parsedState.sortBy || "name",
+      sortOrder: parsedState.sortOrder || "asc"
+    };
+  }
+  return {
+    items: [],
+    loading: false,
+    error: null,
+    totalPages: 1,
+    currentPage: 1,
+    perPage: 10,
+    search: "",
+    sortBy: "name",
+    sortOrder: "asc"
+  };
+};
+
 export const fetchContacts = createAsyncThunk(
   "contacts/fetchContacts",
   async ({ page, perPage, search, sortBy, sortOrder }, { rejectWithValue }) => {
@@ -69,38 +98,66 @@ export const removeContact = createAsyncThunk(
   }
 );
 
-const initialState = {
-  items: [],
-  loading: false,
-  error: null,
-  totalPages: 1,
-  currentPage: 1,
-  perPage: 10,
-  search: "",
-  sortBy: "name",
-  sortOrder: "asc"
-};
-
 const contactsSlice = createSlice({
   name: "contacts",
-  initialState,
+  initialState: getInitialState(),
   reducers: {
     setSearch: (state, action) => {
       state.search = action.payload;
       state.currentPage = 1;
+      localStorage.setItem(
+        "contactsState",
+        JSON.stringify({
+          currentPage: state.currentPage,
+          perPage: state.perPage,
+          search: state.search,
+          sortBy: state.sortBy,
+          sortOrder: state.sortOrder
+        })
+      );
     },
     setSort: (state, action) => {
       const { field, order } = action.payload;
       state.sortBy = field;
       state.sortOrder = order;
       state.currentPage = 1;
+      localStorage.setItem(
+        "contactsState",
+        JSON.stringify({
+          currentPage: state.currentPage,
+          perPage: state.perPage,
+          search: state.search,
+          sortBy: state.sortBy,
+          sortOrder: state.sortOrder
+        })
+      );
     },
     setPage: (state, action) => {
       state.currentPage = action.payload;
+      localStorage.setItem(
+        "contactsState",
+        JSON.stringify({
+          currentPage: state.currentPage,
+          perPage: state.perPage,
+          search: state.search,
+          sortBy: state.sortBy,
+          sortOrder: state.sortOrder
+        })
+      );
     },
     setPerPage: (state, action) => {
       state.perPage = action.payload;
       state.currentPage = 1;
+      localStorage.setItem(
+        "contactsState",
+        JSON.stringify({
+          currentPage: state.currentPage,
+          perPage: state.perPage,
+          search: state.search,
+          sortBy: state.sortBy,
+          sortOrder: state.sortOrder
+        })
+      );
     },
     clearError: (state) => {
       state.error = null;
