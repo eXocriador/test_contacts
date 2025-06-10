@@ -22,6 +22,7 @@ export const serverSetup = () => {
       origin: [
         CORS_ORIGIN,
         'http://localhost:5173',
+        'http://localhost:3001',
         'https://test-contacts-indol.vercel.app',
       ],
       credentials: true,

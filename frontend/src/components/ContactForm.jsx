@@ -13,7 +13,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Alert
+  Alert,
+  FormControlLabel,
+  Switch
 } from "@mui/material";
 import { addContact, editContact } from "../store/slices/contactsSlice";
 
@@ -27,7 +29,8 @@ export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
     name: "",
     email: "",
     phoneNumber: "",
-    contactType: "personal"
+    contactType: "personal",
+    isFavourite: false
   });
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState("");
@@ -41,14 +44,16 @@ export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
         name: contact.name || "",
         email: contact.email || "",
         phoneNumber: contact.phoneNumber || "",
-        contactType: contact.contactType || "personal"
+        contactType: contact.contactType || "personal",
+        isFavourite: contact.isFavourite || false
       });
     } else {
       setFormData({
         name: "",
         email: "",
         phoneNumber: "",
-        contactType: "personal"
+        contactType: "personal",
+        isFavourite: false
       });
     }
     setErrors({});
@@ -91,10 +96,10 @@ export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: name === "isFavourite" ? checked : value
     }));
     // Clear error when user starts typing
     if (errors[name]) {
@@ -198,6 +203,17 @@ export const ContactForm = ({ open, onClose, contact, onSuccess }) => {
                 </Box>
               )}
             </FormControl>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.isFavourite}
+                  onChange={handleChange}
+                  name="isFavourite"
+                  color="primary"
+                />
+              }
+              label="Favorite"
+            />
           </Box>
         </DialogContent>
         <DialogActions>

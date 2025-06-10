@@ -215,6 +215,13 @@ export const ContactsPage = () => {
                 Type{" "}
                 {sortBy === "contactType" && (sortOrder === "asc" ? "↑" : "↓")}
               </TableCell>
+              <TableCell
+                onClick={() => handleSort("isFavourite")}
+                sx={{ cursor: "pointer" }}
+              >
+                Favorite{" "}
+                {sortBy === "isFavourite" && (sortOrder === "asc" ? "↑" : "↓")}
+              </TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -224,10 +231,8 @@ export const ContactsPage = () => {
                 <TableCell>{contact.name}</TableCell>
                 <TableCell>{contact.phoneNumber}</TableCell>
                 <TableCell>{contact.email}</TableCell>
-                <TableCell>
-                  {contact.contactType.charAt(0).toUpperCase() +
-                    contact.contactType.slice(1)}
-                </TableCell>
+                <TableCell>{contact.contactType}</TableCell>
+                <TableCell>{contact.isFavourite ? "★" : "☆"}</TableCell>
                 <TableCell>
                   <IconButton
                     color="primary"
