@@ -8,6 +8,8 @@ import {
 } from "../../services/contacts";
 import axios from "axios";
 
+const API_BASE_URL = "https://contacts-app-backend.onrender.com"; // Render backend URL
+
 const getInitialState = () => {
   const savedState = localStorage.getItem("contactsState");
   if (savedState) {
@@ -71,8 +73,13 @@ export const fetchContacts = createAsyncThunk(
         params.append("contactType", contactType);
       }
 
-      console.log("Sending request to:", `/api/contacts?${params.toString()}`); // Debug log
-      const response = await axios.get(`/api/contacts?${params.toString()}`);
+      console.log(
+        "Sending request to:",
+        `${API_BASE_URL}/api/contacts?${params.toString()}`
+      ); // Debug log
+      const response = await axios.get(
+        `${API_BASE_URL}/api/contacts?${params.toString()}`
+      );
       console.log("Received response:", response.data); // Debug log
       return response;
     } catch (error) {
