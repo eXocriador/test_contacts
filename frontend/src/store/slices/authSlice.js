@@ -1,24 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-
-const API_BASE_URL = "https://test-contacts-x6ri.onrender.com";
-
-// Configure axios defaults
-axios.defaults.withCredentials = true;
+import api from "../../services/api";
 
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/auth/login`,
-        credentials,
-        {
-          headers: {
-            "Content-Type": "application/json"
-          }
-        }
-      );
+      const response = await api.post("/auth/login", credentials);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || "Login failed");
@@ -30,15 +17,7 @@ export const registerUser = createAsyncThunk(
   "auth/register",
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/auth/register`,
-        userData,
-        {
-          headers: {
-            "Content-Type": "application/json"
-          }
-        }
-      );
+      const response = await api.post("/auth/register", userData);
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -52,7 +31,7 @@ export const refreshUserToken = createAsyncThunk(
   "auth/refresh",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/refresh`);
+      const response = await api.post("/auth/refresh");
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -135,5 +114,4 @@ const authSlice = createSlice({
 });
 
 export const { logout, clearError } = authSlice.actions;
-
 export default authSlice.reducer;

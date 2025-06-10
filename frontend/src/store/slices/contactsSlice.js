@@ -1,17 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import {
-  getContacts,
-  getContactById,
-  createContact,
-  updateContact,
-  deleteContact
-} from "../../services/contacts";
-import axios from "axios";
-
-const API_BASE_URL = "https://test-contacts-x6ri.onrender.com"; // Render backend URL
-
-// Configure axios defaults
-axios.defaults.withCredentials = true;
+import api from "../../services/api";
 
 const getInitialState = () => {
   const savedState = localStorage.getItem("contactsState");
@@ -44,16 +32,9 @@ const getInitialState = () => {
 
 export const fetchContacts = createAsyncThunk(
   "contacts/fetchContacts",
-  async (params, { rejectWithValue, getState }) => {
+  async (params, { rejectWithValue }) => {
     try {
-      const { auth } = getState();
-      const response = await axios.get(`${API_BASE_URL}/contacts`, {
-        params,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${auth.accessToken}`
-        }
-      });
+      const response = await api.get("/contacts", { params });
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -63,11 +44,11 @@ export const fetchContacts = createAsyncThunk(
   }
 );
 
-export const addContact = createAsyncThunk(
-  "contacts/addContact",
-  async (contact, { rejectWithValue }) => {
+export const createContact = createAsyncThunk(
+  "contacts/createContact",
+  async (contactData, { rejectWithValue }) => {
     try {
-      const response = await createContact(contact);
+      const response = await api.post("/contacts", contactData);
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -77,11 +58,11 @@ export const addContact = createAsyncThunk(
   }
 );
 
-export const editContact = createAsyncThunk(
-  "contacts/editContact",
-  async ({ id, contact }, { rejectWithValue }) => {
+export const updateContact = createAsyncThunk(
+  "contacts/updateContact",
+  async ({ id, contactData }, { rejectWithValue }) => {
     try {
-      const response = await updateContact(id, contact);
+      const response = await api.put(`/contacts/${id}`, contactData);
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -91,12 +72,12 @@ export const editContact = createAsyncThunk(
   }
 );
 
-export const removeContact = createAsyncThunk(
-  "contacts/removeContact",
+export const deleteContact = createAsyncThunk(
+  "contacts/deleteContact",
   async (id, { rejectWithValue }) => {
     try {
-      await deleteContact(id);
-      return { _id: id };
+      await api.delete(`/contacts/${id}`);
+      return id;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to delete contact"
@@ -109,50 +90,6 @@ const contactsSlice = createSlice({
   name: "contacts",
   initialState: getInitialState(),
   reducers: {
-    setSearch: (state, action) => {
-      state.search = action.payload;
-      state.currentPage = 1;
-      localStorage.setItem(
-        "contactsState",
-        JSON.stringify({
-          currentPage: state.currentPage,
-          perPage: state.perPage,
-          sortBy: state.sortBy,
-          sortOrder: state.sortOrder,
-          search: state.search
-        })
-      );
-    },
-    clearSearch: (state) => {
-      state.search = "";
-      state.currentPage = 1;
-      localStorage.setItem(
-        "contactsState",
-        JSON.stringify({
-          currentPage: state.currentPage,
-          perPage: state.perPage,
-          sortBy: state.sortBy,
-          sortOrder: state.sortOrder,
-          search: state.search
-        })
-      );
-    },
-    setSort: (state, action) => {
-      const { field, order } = action.payload;
-      state.sortBy = field;
-      state.sortOrder = order;
-      state.currentPage = 1;
-      localStorage.setItem(
-        "contactsState",
-        JSON.stringify({
-          currentPage: state.currentPage,
-          perPage: state.perPage,
-          search: state.search,
-          sortBy: state.sortBy,
-          sortOrder: state.sortOrder
-        })
-      );
-    },
     setPage: (state, action) => {
       state.currentPage = action.payload;
       localStorage.setItem(
@@ -160,7 +97,6 @@ const contactsSlice = createSlice({
         JSON.stringify({
           currentPage: state.currentPage,
           perPage: state.perPage,
-          search: state.search,
           sortBy: state.sortBy,
           sortOrder: state.sortOrder
         })
@@ -174,14 +110,27 @@ const contactsSlice = createSlice({
         JSON.stringify({
           currentPage: state.currentPage,
           perPage: state.perPage,
-          search: state.search,
           sortBy: state.sortBy,
           sortOrder: state.sortOrder
         })
       );
     },
-    clearError: (state) => {
-      state.error = null;
+    setSearch: (state, action) => {
+      state.search = action.payload;
+      state.currentPage = 1;
+    },
+    setSort: (state, action) => {
+      state.sortBy = action.payload.field;
+      state.sortOrder = action.payload.order;
+      localStorage.setItem(
+        "contactsState",
+        JSON.stringify({
+          currentPage: state.currentPage,
+          perPage: state.perPage,
+          sortBy: state.sortBy,
+          sortOrder: state.sortOrder
+        })
+      );
     }
   },
   extraReducers: (builder) => {
@@ -193,160 +142,62 @@ const contactsSlice = createSlice({
       })
       .addCase(fetchContacts.fulfilled, (state, action) => {
         state.loading = false;
-        console.log("Processing response:", action.payload); // Debug log
-        if (action.payload && action.payload.data) {
-          state.items = action.payload.data.data || [];
-          state.totalPages = action.payload.data.totalPages || 1;
-          state.currentPage = action.payload.data.page || 1;
-          state.perPage = action.payload.data.perPage || 10;
-          console.log("Updated state:", state); // Debug log
-        } else {
-          console.error("Invalid response format:", action.payload); // Debug log
-          state.items = [];
-          state.error = "Invalid response format";
-        }
+        state.items = action.payload.data.contacts;
+        state.totalPages = action.payload.data.totalPages;
       })
       .addCase(fetchContacts.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || action.error.message;
-        state.items = [];
-        console.error("Request rejected:", action.payload); // Debug log
+        state.error = action.payload;
       })
-      // Add Contact
-      .addCase(addContact.pending, (state) => {
+      // Create Contact
+      .addCase(createContact.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(addContact.fulfilled, (state, action) => {
+      .addCase(createContact.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload) {
-          state.items = [...state.items, action.payload];
-        } else {
-          state.error = "Invalid response format";
-        }
+        state.items.push(action.payload.data);
       })
-      .addCase(addContact.rejected, (state, action) => {
+      .addCase(createContact.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || action.error.message;
+        state.error = action.payload;
       })
-      // Edit Contact
-      .addCase(editContact.pending, (state) => {
+      // Update Contact
+      .addCase(updateContact.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(editContact.fulfilled, (state, action) => {
+      .addCase(updateContact.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload) {
-          const index = state.items.findIndex(
-            (item) => item._id === action.payload._id
-          );
-          if (index !== -1) {
-            state.items[index] = action.payload;
-          }
-        } else {
-          state.error = "Invalid response format";
+        const index = state.items.findIndex(
+          (contact) => contact._id === action.payload.data._id
+        );
+        if (index !== -1) {
+          state.items[index] = action.payload.data;
         }
       })
-      .addCase(editContact.rejected, (state, action) => {
+      .addCase(updateContact.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || action.error.message;
+        state.error = action.payload;
       })
-      // Remove Contact
-      .addCase(removeContact.pending, (state) => {
+      // Delete Contact
+      .addCase(deleteContact.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(removeContact.fulfilled, (state, action) => {
+      .addCase(deleteContact.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload && action.payload._id) {
-          state.items = state.items.filter(
-            (item) => item._id !== action.payload._id
-          );
-        } else {
-          state.error = "Invalid response format";
-        }
+        state.items = state.items.filter(
+          (contact) => contact._id !== action.payload
+        );
       })
-      .addCase(removeContact.rejected, (state, action) => {
+      .addCase(deleteContact.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || action.error.message;
+        state.error = action.payload;
       });
   }
 });
 
-export const {
-  setSearch,
-  setSort,
-  setPage,
-  setPerPage,
-  clearError,
-  clearSearch
-} = contactsSlice.actions;
-
-export const fetchContactById = (id) => async (dispatch) => {
-  try {
-    dispatch(setLoading(true));
-    dispatch(clearError());
-    const response = await getContactById(id);
-    dispatch(setCurrentContact(response.data.data));
-    return response;
-  } catch (error) {
-    dispatch(
-      setError(error.response?.data?.message || "Failed to fetch contact")
-    );
-    throw error;
-  } finally {
-    dispatch(setLoading(false));
-  }
-};
-
-export const createNewContact = (contactData) => async (dispatch) => {
-  try {
-    dispatch(setLoading(true));
-    dispatch(clearError());
-    const response = await createContact(contactData);
-    dispatch(fetchContacts());
-    return response;
-  } catch (error) {
-    dispatch(
-      setError(error.response?.data?.message || "Failed to create contact")
-    );
-    throw error;
-  } finally {
-    dispatch(setLoading(false));
-  }
-};
-
-export const updateExistingContact = (id, contactData) => async (dispatch) => {
-  try {
-    dispatch(setLoading(true));
-    dispatch(clearError());
-    const response = await updateContact(id, contactData);
-    dispatch(fetchContacts());
-    return response;
-  } catch (error) {
-    dispatch(
-      setError(error.response?.data?.message || "Failed to update contact")
-    );
-    throw error;
-  } finally {
-    dispatch(setLoading(false));
-  }
-};
-
-export const deleteExistingContact = (id) => async (dispatch) => {
-  try {
-    dispatch(setLoading(true));
-    dispatch(clearError());
-    await deleteContact(id);
-    dispatch(fetchContacts());
-  } catch (error) {
-    dispatch(
-      setError(error.response?.data?.message || "Failed to delete contact")
-    );
-    throw error;
-  } finally {
-    dispatch(setLoading(false));
-  }
-};
-
+export const { setPage, setPerPage, setSearch, setSort } =
+  contactsSlice.actions;
 export default contactsSlice.reducer;

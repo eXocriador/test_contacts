@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+  baseURL:
+    import.meta.env.VITE_API_URL || "https://test-contacts-x6ri.onrender.com",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json"
@@ -34,17 +35,7 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response) => {
-    // Дозволяємо відповіді без тіла (204 No Content)
-    if (response.status === 204) {
-      return response;
-    }
-    // Перевіряємо структуру відповіді для інших статусів
-    if (response.data && typeof response.data === "object") {
-      return response;
-    }
-    return Promise.reject(new Error("Invalid response format"));
-  },
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
@@ -65,7 +56,7 @@ api.interceptors.response.use(
 
       try {
         const response = await api.post("/auth/refresh");
-        const { accessToken } = response.data;
+        const { accessToken } = response.data.data;
         if (!accessToken) {
           throw new Error("No access token in refresh response");
         }
