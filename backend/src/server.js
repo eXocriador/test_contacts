@@ -17,15 +17,10 @@ const CORS_ORIGIN = getEnvVar('CORS_ORIGIN', 'http://localhost:5173');
 export const serverSetup = () => {
   const app = express();
 
+  // Enable CORS for all routes
   app.use(
     cors({
-      origin: [
-        CORS_ORIGIN,
-        'http://localhost:5173',
-        'http://localhost:3001',
-        'https://test-contacts-indol.vercel.app',
-        'https://contacts-app-frontend.vercel.app',
-      ],
+      origin: true, // Allow all origins
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
