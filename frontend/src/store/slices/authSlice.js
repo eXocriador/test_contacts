@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_BASE_URL = "https://contacts-app-backend.onrender.com";
+const API_BASE_URL = "https://test-contacts-x6ri.onrender.com";
 
 // Configure axios defaults
 axios.defaults.withCredentials = true;

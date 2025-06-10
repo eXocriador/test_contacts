@@ -1,43 +1,69 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import cors from 'cors';
-
-import { getEnvVar } from './utils/getEnvVar.js';
-import router from './routers/index.js';
-import { notFoundHandler } from './middlewares/notFoundHandler.js';
-import { errorHandler } from './middlewares/errorHandler.js';
-// import { logger } from './middlewares/logger.js';
+import contactsRouter from './routers/contacts.js';
+import authRouter from './routers/auth.js';
+import { errorHandler } from './middleware/errorHandler.js';
 import { cLogs } from './utils/cLogs.js';
+import { validateEnv } from './utils/validateEnv.js';
 
 dotenv.config();
-const PORT = Number(getEnvVar('PORT', '3000'));
+validateEnv();
 
-export const serverSetup = () => {
-  const app = express();
+const app = express();
 
-  // Basic middleware
-  app.use(express.json());
-  app.use(cookieParser());
+// Middleware
+app.use(express.json());
+app.use(cookieParser());
 
-  // CORS configuration
-  const corsOptions = {
-    origin: 'https://test-contacts-indol.vercel.app',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Set-Cookie'],
-  };
+// CORS middleware
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    'http://localhost:3001',
+    'https://test-contacts-indol.vercel.app',
+  ];
 
-  // Apply CORS
-  app.use(cors(corsOptions));
+  const origin = req.headers.origin;
+  console.log('Request origin:', origin);
 
-  // Routes
-  app.use('/', router);
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+    );
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Authorization, Cookie',
+    );
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-  // Error handlers
-  app.use(notFoundHandler);
-  app.use(errorHandler);
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      console.log('Handling OPTIONS request');
+      return res.status(200).end();
+    }
+  }
 
-  app.listen(PORT, cLogs);
-};
+  next();
+});
+
+// Routes
+app.use('/contacts', contactsRouter);
+app.use('/auth', authRouter);
+
+// Error handling
+app.use(errorHandler);
+
+// Connect to MongoDB
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log('Connected to MongoDB');
+    app.listen(process.env.PORT, cLogs);
+  })
+  .catch((error) => {
+    console.error('MongoDB connection error:', error);
+    process.exit(1);
+  });
