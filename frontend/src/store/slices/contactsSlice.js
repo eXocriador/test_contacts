@@ -44,9 +44,16 @@ const getInitialState = () => {
 
 export const fetchContacts = createAsyncThunk(
   "contacts/fetchContacts",
-  async (params, { rejectWithValue }) => {
+  async (params, { rejectWithValue, getState }) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/contacts`, { params });
+      const { auth } = getState();
+      const response = await axios.get(`${API_BASE_URL}/contacts`, {
+        params,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${auth.accessToken}`
+        }
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(
