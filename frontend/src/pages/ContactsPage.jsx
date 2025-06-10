@@ -322,18 +322,34 @@ export const ContactsPage = () => {
           component={Paper}
           sx={{ width: "100%", overflowX: "auto" }}
         >
-          <Table size="small" sx={{ minWidth: 650 }}>
+          <Table size="small" sx={{ minWidth: 650, tableLayout: "fixed" }}>
             <TableHead>
               <TableRow>
                 <TableCell
-                  sx={{ width: 180, fontWeight: "bold" }}
+                  sx={{
+                    width: 180,
+                    minWidth: 180,
+                    maxWidth: 180,
+                    fontWeight: "bold",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}
                   onClick={() => handleSort("name")}
                   style={{ cursor: "pointer" }}
                 >
                   Name {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
                 </TableCell>
                 <TableCell
-                  sx={{ width: 140, fontWeight: "bold" }}
+                  sx={{
+                    width: 140,
+                    minWidth: 140,
+                    maxWidth: 140,
+                    fontWeight: "bold",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}
                   onClick={() => handleSort("phoneNumber")}
                   style={{ cursor: "pointer" }}
                 >
@@ -342,7 +358,15 @@ export const ContactsPage = () => {
                     (sortOrder === "asc" ? "↑" : "↓")}
                 </TableCell>
                 <TableCell
-                  sx={{ width: 220, fontWeight: "bold" }}
+                  sx={{
+                    width: 220,
+                    minWidth: 220,
+                    maxWidth: 220,
+                    fontWeight: "bold",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}
                   onClick={() => handleSort("email")}
                   style={{ cursor: "pointer" }}
                 >
@@ -350,7 +374,15 @@ export const ContactsPage = () => {
                   {sortBy === "email" && (sortOrder === "asc" ? "↑" : "↓")}
                 </TableCell>
                 <TableCell
-                  sx={{ width: 100, fontWeight: "bold" }}
+                  sx={{
+                    width: 100,
+                    minWidth: 100,
+                    maxWidth: 100,
+                    fontWeight: "bold",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}
                   onClick={() => handleSort("contactType")}
                   style={{ cursor: "pointer" }}
                 >
@@ -358,11 +390,29 @@ export const ContactsPage = () => {
                   {sortBy === "contactType" &&
                     (sortOrder === "asc" ? "↑" : "↓")}
                 </TableCell>
-                <TableCell sx={{ width: 100, fontWeight: "bold" }}>
+                <TableCell
+                  sx={{
+                    width: 100,
+                    minWidth: 100,
+                    maxWidth: 100,
+                    fontWeight: "bold",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}
+                >
                   Actions
                 </TableCell>
                 <TableCell
-                  sx={{ width: 80, fontWeight: "bold" }}
+                  sx={{
+                    width: 80,
+                    minWidth: 80,
+                    maxWidth: 80,
+                    fontWeight: "bold",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}
                   align="right"
                   onClick={() => handleSort("isFavourite")}
                   style={{ cursor: "pointer" }}
@@ -376,15 +426,55 @@ export const ContactsPage = () => {
             <TableBody>
               {contacts.map((contact) => (
                 <TableRow key={contact._id} sx={{ height: 48 }}>
-                  <TableCell sx={{ width: 180 }}>{contact.name}</TableCell>
-                  <TableCell sx={{ width: 140 }}>
+                  <TableCell
+                    sx={{
+                      width: 180,
+                      minWidth: 180,
+                      maxWidth: 180,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap"
+                    }}
+                  >
+                    {contact.name}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      width: 140,
+                      minWidth: 140,
+                      maxWidth: 140,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap"
+                    }}
+                  >
                     {contact.phoneNumber}
                   </TableCell>
-                  <TableCell sx={{ width: 220 }}>{contact.email}</TableCell>
-                  <TableCell sx={{ width: 100 }}>
+                  <TableCell
+                    sx={{
+                      width: 220,
+                      minWidth: 220,
+                      maxWidth: 220,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap"
+                    }}
+                  >
+                    {contact.email}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      width: 100,
+                      minWidth: 100,
+                      maxWidth: 100,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap"
+                    }}
+                  >
                     {contact.contactType}
                   </TableCell>
-                  <TableCell sx={{ width: 100 }}>
+                  <TableCell sx={{ width: 100, minWidth: 100, maxWidth: 100 }}>
                     <IconButton
                       color="primary"
                       onClick={() => handleOpenForm(contact)}
@@ -398,7 +488,10 @@ export const ContactsPage = () => {
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
-                  <TableCell sx={{ width: 80 }} align="right">
+                  <TableCell
+                    sx={{ width: 80, minWidth: 80, maxWidth: 80 }}
+                    align="right"
+                  >
                     <IconButton onClick={() => handleToggleFavorite(contact)}>
                       {contact.isFavourite ? (
                         <StarIcon color="warning" />
@@ -407,54 +500,6 @@ export const ContactsPage = () => {
                       )}
                     </IconButton>
                   </TableCell>
-                </TableRow>
-              ))}
-              {Array.from({
-                length: Math.max(0, perPage - contacts.length)
-              }).map((_, idx) => (
-                <TableRow key={`empty-${idx}`} sx={{ height: 48 }}>
-                  <TableCell
-                    sx={{
-                      borderBottom: "1px solid #e0e0e0",
-                      background: "#fff",
-                      width: 180
-                    }}
-                  />
-                  <TableCell
-                    sx={{
-                      borderBottom: "1px solid #e0e0e0",
-                      background: "#fff",
-                      width: 140
-                    }}
-                  />
-                  <TableCell
-                    sx={{
-                      borderBottom: "1px solid #e0e0e0",
-                      background: "#fff",
-                      width: 220
-                    }}
-                  />
-                  <TableCell
-                    sx={{
-                      borderBottom: "1px solid #e0e0e0",
-                      background: "#fff",
-                      width: 100
-                    }}
-                  />
-                  <TableCell
-                    sx={{
-                      borderBottom: "1px solid #e0e0e0",
-                      background: "#fff",
-                      width: 100
-                    }}
-                  />
-                  <TableCell
-                    sx={{
-                      borderBottom: "1px solid #e0e0e0",
-                      background: "#fff",
-                      width: 80
-                    }}
-                  />
                 </TableRow>
               ))}
             </TableBody>
