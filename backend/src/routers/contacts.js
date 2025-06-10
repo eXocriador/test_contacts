@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express from 'express';
 import {
   getContactsController,
   getContactByIdController,
@@ -15,15 +15,19 @@ import {
 } from '../validation/contacts.js';
 import { isValidId } from '../middlewares/isValidId.js';
 import { authenticate } from '../middlewares/authenticate.js';
+import { validateContact } from '../middlewares/validateContact.js';
+import { validateId } from '../middlewares/validateId.js';
+import { validateQuery } from '../middlewares/validateQuery.js';
+import { auth } from '../middlewares/auth.js';
 
-const contactsRouter = Router();
+const router = express.Router();
 
 // Add CORS headers middleware
 const corsHeaders = (req, res, next) => {
-  res.header(
-    'Access-Control-Allow-Origin',
-    'https://test-contacts-indol.vercel.app',
-  );
+  const origin = req.headers.origin;
+  console.log('Request origin:', origin);
+
+  res.header('Access-Control-Allow-Origin', origin || '*');
   res.header(
     'Access-Control-Allow-Methods',
     'GET, POST, PUT, DELETE, PATCH, OPTIONS',
@@ -37,42 +41,56 @@ const corsHeaders = (req, res, next) => {
 
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('Handling OPTIONS request');
     return res.status(200).end();
   }
+
+  console.log('CORS headers set:', {
+    'Access-Control-Allow-Origin': res.getHeader('Access-Control-Allow-Origin'),
+    'Access-Control-Allow-Methods': res.getHeader(
+      'Access-Control-Allow-Methods',
+    ),
+    'Access-Control-Allow-Headers': res.getHeader(
+      'Access-Control-Allow-Headers',
+    ),
+    'Access-Control-Allow-Credentials': res.getHeader(
+      'Access-Control-Allow-Credentials',
+    ),
+  });
+
   next();
 };
 
 // Apply CORS headers to all routes
-contactsRouter.use(corsHeaders);
+router.use(corsHeaders);
 
-contactsRouter.use(authenticate);
-
-contactsRouter.get('/', ctrlWrapper(getContactsController));
-contactsRouter.get(
+router.get('/', auth, validateQuery, ctrlWrapper(getContactsController));
+router.get(
   '/:contactId',
+  auth,
   isValidId,
   ctrlWrapper(getContactByIdController),
 );
-contactsRouter.post(
-  '/',
-  validateBody(createContactSchema),
-  ctrlWrapper(createContactController),
-);
-contactsRouter.delete(
+router.post('/', auth, validateContact, ctrlWrapper(createContactController));
+router.delete(
   '/:contactId',
+  auth,
   isValidId,
   ctrlWrapper(deleteContactController),
 );
-contactsRouter.put(
+router.put(
   '/:contactId',
+  auth,
   isValidId,
+  validateContact,
   ctrlWrapper(updateContactController),
 );
-contactsRouter.patch(
+router.patch(
   '/:contactId',
+  auth,
   isValidId,
   validateBody(updateContactSchema),
   ctrlWrapper(patchContactController),
 );
 
-export default contactsRouter;
+export default router;
