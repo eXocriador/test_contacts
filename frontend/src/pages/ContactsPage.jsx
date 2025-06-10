@@ -46,7 +46,7 @@ import {
 import { ContactForm } from "../components/ContactForm";
 import Pagination from "../components/Pagination";
 
-const ContactsPage = () => {
+export const ContactsPage = () => {
   const dispatch = useDispatch();
   const {
     items: contacts,
@@ -295,5 +295,3 @@ const ContactsPage = () => {
     </Container>
   );
 };
-
-export default ContactsPage;
