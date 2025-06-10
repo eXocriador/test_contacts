@@ -27,7 +27,9 @@ import {
   Card,
   CardContent,
   CardActions,
-  Tooltip
+  Tooltip,
+  Menu,
+  Divider
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -35,7 +37,11 @@ import {
   Delete as DeleteIcon,
   Search as SearchIcon,
   Star as StarIcon,
-  StarBorder as StarBorderIcon
+  StarBorder as StarBorderIcon,
+  Sort as SortIcon,
+  Clear as ClearIcon,
+  ArrowUpward as ArrowUpwardIcon,
+  ArrowDownward as ArrowDownwardIcon
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -47,10 +53,19 @@ import {
   setSort,
   setPage,
   setPerPage,
-  clearError
+  clearError,
+  clearSearch
 } from "../store/slices/contactsSlice";
 import { ContactForm } from "../components/ContactForm";
 import Pagination from "../components/Pagination";
+
+const SORT_OPTIONS = [
+  { value: "name", label: "Name" },
+  { value: "email", label: "Email" },
+  { value: "phoneNumber", label: "Phone" },
+  { value: "createdAt", label: "Created Date" },
+  { value: "isFavourite", label: "Favorite Status" }
+];
 
 const ContactCard = ({ contact, onEdit, onDelete, onToggleFavorite }) => (
   <Card
@@ -152,6 +167,7 @@ export const ContactsPage = () => {
   const [contactToDelete, setContactToDelete] = useState(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [contactTypeFilter, setContactTypeFilter] = useState("");
+  const [sortAnchorEl, setSortAnchorEl] = useState(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -272,9 +288,29 @@ export const ContactsPage = () => {
     dispatch(setSearch(searchQuery));
   };
 
-  const handleSort = (field) => {
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    dispatch(clearSearch());
+  };
+
+  const handleSortClick = (event) => {
+    setSortAnchorEl(event.currentTarget);
+  };
+
+  const handleSortClose = () => {
+    setSortAnchorEl(null);
+  };
+
+  const handleSortSelect = (field) => {
     const newOrder = field === sortBy && sortOrder === "asc" ? "desc" : "asc";
     dispatch(setSort({ field, order: newOrder }));
+    handleSortClose();
+  };
+
+  const handleToggleSortOrder = () => {
+    dispatch(
+      setSort({ field: sortBy, order: sortOrder === "asc" ? "desc" : "asc" })
+    );
   };
 
   const handlePageChange = (newPage) => {
@@ -306,7 +342,7 @@ export const ContactsPage = () => {
         </Button>
       </Box>
 
-      {/* Unified filter/search panel, responsive */}
+      {/* Unified filter/search panel */}
       <Box
         component="form"
         onSubmit={handleSearch}
@@ -326,7 +362,12 @@ export const ContactsPage = () => {
           size="small"
           sx={{ flex: 2, minWidth: 180, width: { xs: "100%", sm: "auto" } }}
           InputProps={{
-            endAdornment: (
+            endAdornment: searchQuery && (
+              <IconButton size="small" onClick={handleClearSearch}>
+                <ClearIcon />
+              </IconButton>
+            ),
+            startAdornment: (
               <IconButton type="submit" size="small">
                 <SearchIcon />
               </IconButton>
@@ -334,57 +375,51 @@ export const ContactsPage = () => {
           }}
           placeholder="Search by name, email or phone..."
         />
-        <FormControl
-          sx={{ minWidth: 100, width: { xs: "100%", sm: "auto" } }}
-          size="small"
-        >
-          <InputLabel>Per page</InputLabel>
-          <Select
-            value={perPage}
-            onChange={handlePerPageChange}
-            label="Per page"
-          >
-            <MenuItem value={8}>8</MenuItem>
-            <MenuItem value={12}>12</MenuItem>
-            <MenuItem value={20}>20</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl
-          sx={{ minWidth: 120, width: { xs: "100%", sm: "auto" } }}
-          size="small"
-        >
-          <InputLabel>Type</InputLabel>
-          <Select
-            value={contactTypeFilter}
-            onChange={handleContactTypeFilter}
-            label="Type"
-          >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="home">Home</MenuItem>
-            <MenuItem value="personal">Personal</MenuItem>
-            <MenuItem value="work">Work</MenuItem>
-          </Select>
-        </FormControl>
-        <Box
-          sx={{
-            flex: 1,
-            display: "flex",
-            justifyContent: { xs: "flex-start", sm: "flex-end" },
-            width: { xs: "100%", sm: "auto" }
-          }}
-        >
+
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button
-            variant={showFavoritesOnly ? "contained" : "outlined"}
-            color="warning"
+            variant="outlined"
             size="small"
-            onClick={handleFavoritesFilter}
-            sx={{ minWidth: 40, height: 40, borderRadius: 1 }}
-            title="Show only favorites"
+            onClick={handleSortClick}
+            startIcon={<SortIcon />}
           >
-            <StarIcon color={showFavoritesOnly ? "inherit" : "disabled"} />
+            Sort by: {SORT_OPTIONS.find((opt) => opt.value === sortBy)?.label}
           </Button>
+          <IconButton
+            size="small"
+            onClick={handleToggleSortOrder}
+            color={sortOrder === "asc" ? "primary" : "default"}
+          >
+            {sortOrder === "asc" ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}
+          </IconButton>
         </Box>
+
+        <Button
+          variant={showFavoritesOnly ? "contained" : "outlined"}
+          color="warning"
+          size="small"
+          onClick={handleFavoritesFilter}
+          startIcon={showFavoritesOnly ? <StarIcon /> : <StarBorderIcon />}
+        >
+          {showFavoritesOnly ? "Favorites" : "All"}
+        </Button>
       </Box>
+
+      <Menu
+        anchorEl={sortAnchorEl}
+        open={Boolean(sortAnchorEl)}
+        onClose={handleSortClose}
+      >
+        {SORT_OPTIONS.map((option) => (
+          <MenuItem
+            key={option.value}
+            onClick={() => handleSortSelect(option.value)}
+            selected={sortBy === option.value}
+          >
+            {option.label}
+          </MenuItem>
+        ))}
+      </Menu>
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -406,6 +441,17 @@ export const ContactsPage = () => {
         ))}
       </Grid>
 
+      {contacts.length === 0 && !loading && (
+        <Box sx={{ textAlign: "center", py: 4 }}>
+          <Typography variant="h6" color="text.secondary">
+            No contacts found
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Try adjusting your search or add a new contact
+          </Typography>
+        </Box>
+      )}
+
       <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
         <Pagination
           currentPage={currentPage}
@@ -424,10 +470,12 @@ export const ContactsPage = () => {
         />
       </Dialog>
 
-      {/* Custom Delete Dialog */}
+      {/* Delete Confirmation Dialog */}
       <Dialog
         open={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
+        maxWidth="xs"
+        fullWidth
       >
         <DialogTitle>Delete Contact</DialogTitle>
         <DialogContent>

@@ -18,7 +18,7 @@ const getInitialState = () => {
       totalPages: 1,
       currentPage: parsedState.currentPage || 1,
       perPage: parsedState.perPage || 10,
-      search: parsedState.search || "",
+      search: "",
       sortBy: parsedState.sortBy || "name",
       sortOrder: parsedState.sortOrder || "asc"
     };
@@ -115,11 +115,14 @@ const contactsSlice = createSlice({
         JSON.stringify({
           currentPage: state.currentPage,
           perPage: state.perPage,
-          search: state.search,
           sortBy: state.sortBy,
           sortOrder: state.sortOrder
         })
       );
+    },
+    clearSearch: (state) => {
+      state.search = "";
+      state.currentPage = 1;
     },
     setSort: (state, action) => {
       const { field, order } = action.payload;
@@ -253,8 +256,14 @@ const contactsSlice = createSlice({
   }
 });
 
-export const { setSearch, setSort, setPage, setPerPage, clearError } =
-  contactsSlice.actions;
+export const {
+  setSearch,
+  setSort,
+  setPage,
+  setPerPage,
+  clearError,
+  clearSearch
+} = contactsSlice.actions;
 
 export const fetchContactById = (id) => async (dispatch) => {
   try {
